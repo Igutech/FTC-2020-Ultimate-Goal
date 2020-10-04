@@ -147,6 +147,7 @@ public class Teleop extends OpMode {
             long diff = System.nanoTime() - nanos;
             if (diff < 5000L)
                 Thread.sleep(0, (int) (5000 - diff));
+            System.out.println("Teleop time: "+(diff/1000000));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

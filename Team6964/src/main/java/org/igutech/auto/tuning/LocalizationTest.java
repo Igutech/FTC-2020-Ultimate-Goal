@@ -33,6 +33,7 @@ public class LocalizationTest extends LinearOpMode {
         waitForStart();
 
         while (!isStopRequested()) {
+            long nanos = System.nanoTime();
             Pose2d baseVel = new Pose2d(
                     -gamepad1.left_stick_y,
                     -gamepad1.left_stick_x,
@@ -63,6 +64,10 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
             telemetry.update();
+            long diff = System.nanoTime() - nanos;
+            System.out.println("Localization Test time: "+(diff/1000000));
+
         }
+
     }
 }
