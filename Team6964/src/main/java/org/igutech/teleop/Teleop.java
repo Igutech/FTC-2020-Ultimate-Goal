@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.igutech.config.Hardware;
+import org.igutech.teleop.Modules.BulkRead;
 import org.igutech.teleop.Modules.DisconnectWorkaround;
 import org.igutech.teleop.Modules.DriveTrain;
 import org.igutech.teleop.Modules.GamepadService;
@@ -30,6 +31,7 @@ public class Teleop extends OpMode {
 
         modules.add(new DriveTrain());
         modules.add(new ThreeWheelOdometry());
+
         
     }
 
@@ -37,6 +39,7 @@ public class Teleop extends OpMode {
         modules.add(new DisconnectWorkaround());
         modules.add(new GamepadService(gamepad1,gamepad2));
         modules.add(new TimerService());
+        modules.add(new BulkRead());
     }
 
     /**
