@@ -1,8 +1,10 @@
 package org.igutech.auto.vision;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -16,7 +18,8 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 public class PipelineTest extends LinearOpMode
 {
     OpenCvCamera phoneCam;
-
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    Telemetry dashboardTelemetry = dashboard.getTelemetry();
     @Override
     public void runOpMode()
     {
@@ -39,7 +42,7 @@ public class PipelineTest extends LinearOpMode
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        UltimateGoalPipeline pipeline = new UltimateGoalPipeline();
+        FTClibPipeline pipeline = new FTClibPipeline();
         phoneCam.setPipeline(pipeline);
 
         /*
@@ -84,8 +87,8 @@ public class PipelineTest extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
-            telemetry.addData("left",pipeline.left);
-            telemetry.addData("right",pipeline.right);
+            dashboardTelemetry.addData("top",pipeline.getTopAverage());
+            dashboardTelemetry.addData("bottom",pipeline.getBottomAverage());
             telemetry.addData("Frame Count", phoneCam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
             telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
@@ -93,6 +96,7 @@ public class PipelineTest extends LinearOpMode
             telemetry.addData("Overhead time ms", phoneCam.getOverheadTimeMs());
             telemetry.addData("Theoretical max FPS", phoneCam.getCurrentPipelineMaxFps());
             telemetry.update();
+            dashboardTelemetry.update();
 
             /*
              * NOTE: stopping the stream from the camera early (before the end of the OpMode
