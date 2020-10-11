@@ -8,6 +8,7 @@ import org.igutech.teleop.Modules.BulkRead;
 import org.igutech.teleop.Modules.DisconnectWorkaround;
 import org.igutech.teleop.Modules.DriveTrain;
 import org.igutech.teleop.Modules.GamepadService;
+import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.ThreeWheelOdometry;
 import org.igutech.teleop.Modules.TimerService;
 
@@ -31,6 +32,7 @@ public class Teleop extends OpMode {
 
         modules.add(new DriveTrain());
         modules.add(new ThreeWheelOdometry());
+        modules.add(new Shooter());
 
         
     }

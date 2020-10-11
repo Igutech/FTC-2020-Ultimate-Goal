@@ -33,7 +33,7 @@ public class Shooter extends Module {
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
         bulkRead = (BulkRead) Teleop.getInstance().getService("BulkRead");
         pidController = new PIDController(p, i, d);
-        veloToggle = new ButtonToggle(1, "x", ()->{},()->{});
+        veloToggle = new ButtonToggle(2, "x", ()->{},()->{});
         veloToggle.init();
     }
 
@@ -42,19 +42,21 @@ public class Shooter extends Module {
         veloToggle.loop();
         veloControlActive = veloToggle.getState();
         double manualPower = gamepadService.getAnalog(2, "right_stick_y");
-        if (Math.abs(manualPower) > 0.01) {
-            Teleop.getInstance().getHardware().getMotors().get("shooter1").setPower(manualPower);
-            Teleop.getInstance().getHardware().getMotors().get("shooter2").setPower(manualPower);
-        } else if (veloControlActive) {
-            pidController.updateSetpoint(motorVelo);
-            double autoPower = pidController.update(bulkRead.getBackRightVelo());
-            Teleop.getInstance().getHardware().getMotors().get("shooter1").setPower(autoPower);
-            Teleop.getInstance().getHardware().getMotors().get("shooter2").setPower(autoPower);
+        if (Math.abs(manualPower) != 0.0) {
+            Teleop.getInstance().getHardware().getMotors().get("frontleft").setPower(manualPower);
+            Teleop.getInstance().getHardware().getMotors().get("backleft").setPower(manualPower);
         }
+//        } else if (veloControlActive) {
+//            pidController.updateSetpoint(motorVelo);
+//            double autoPower = pidController.update(bulkRead.getBackRightVelo());
+//            Teleop.getInstance().getHardware().getMotors().get("shooter1").setPower(autoPower);
+//            Teleop.getInstance().getHardware().getMotors().get("shooter2").setPower(autoPower);
+//        }
 
+        dashboardTelemetry.addData("manual", manualPower);
         dashboardTelemetry.addData("Target Velo",motorVelo);
-        dashboardTelemetry.addData("Motor1 Velo",bulkRead.getBackRightVelo());
-        dashboardTelemetry.addData("Motor2 Velo",bulkRead.getBackRightVelo());
+        dashboardTelemetry.addData("MotorLeft Velo",bulkRead.getFrontLeftVelo());
+        dashboardTelemetry.addData("MotorRight Velo",bulkRead.getBackLeftVelo());
         dashboardTelemetry.addData("PID Active ",veloControlActive);
         dashboardTelemetry.update();
 

@@ -28,19 +28,22 @@ public class FTClibPipeline extends OpenCvPipeline {
     public Mat processFrame(Mat input) {
         Imgproc.cvtColor(input, matYCrCb, Imgproc.COLOR_RGB2YCrCb);
 
+        int topOne =                     (int) (matYCrCb.width() * widthPercentage);
+        int topTwo =                (int) (matYCrCb.width() * widthPercentage) + rectangleWidth;
+        int topThree=                (int) (matYCrCb.height() * heightPercentage);
+        int topFour=                (int) (matYCrCb.height() * heightPercentage) + rectangleHeight;
 
         int[] topRect = {
-                (int) (matYCrCb.width() * widthPercentage),
-                (int) (matYCrCb.width() * widthPercentage) + rectangleWidth,
-                (int) (matYCrCb.height() * heightPercentage),
-                (int) (matYCrCb.height() * heightPercentage) + rectangleHeight,
+                topOne,topTwo,topThree,topFour
         };
 
+        int bottomOne =                 (int) (matYCrCb.width() * widthPercentage);
+        int bottomTwo =                 (int) (matYCrCb.width() * widthPercentage) + rectangleWidth;
+        int bottomThree =                 (int) (matYCrCb.height() * heightPercentage) + rectangleDistance;
+        int bottomFour =                 (int) (matYCrCb.height() * heightPercentage) + (rectangleDistance + rectangleHeight);
+
         int[] bottomRect = {
-                (int) (matYCrCb.width() * widthPercentage),
-                (int) (matYCrCb.width() * widthPercentage) + rectangleWidth,
-                (int) (matYCrCb.height() * heightPercentage) + rectangleDistance,
-                (int) (matYCrCb.height() * heightPercentage) + (rectangleDistance + rectangleHeight)
+                bottomOne,bottomTwo,bottomThree,bottomFour
         };
 
         drawRectOnToMat(input, topRect, new Scalar(255, 0, 0));
