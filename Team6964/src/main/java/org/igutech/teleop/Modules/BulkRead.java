@@ -28,8 +28,8 @@ public class BulkRead extends Service {
         frontRight = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("frontright");  // or change these strings to match your existing Robot Configuration.
         backLeft = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("backleft");
         backRight = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("backright");
-        //shooterLeft=(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("shooterLeft");
-        //shooterRight=(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("shooterRight");
+        shooterLeft=(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("shooterLeft");
+        shooterRight=(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("shooterRight");
         allHubs = Teleop.getInstance().hardwareMap.getAll(LynxModule.class);
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
