@@ -20,6 +20,7 @@ public class PipelineTest extends LinearOpMode
     OpenCvCamera phoneCam;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
+    UGRectDetector UGRectDetector;
     @Override
     public void runOpMode()
     {
@@ -31,9 +32,10 @@ public class PipelineTest extends LinearOpMode
          * the RC phone). If no camera monitor is desired, use the alternate
          * single-parameter constructor instead (commented out below)
          */
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-
+//        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+//        phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+        UGRectDetector = new UGRectDetector(hardwareMap);
+        UGRectDetector.init();
         // OR...  Do Not Activate the Camera Monitor View
         //phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK);
 
@@ -42,8 +44,8 @@ public class PipelineTest extends LinearOpMode
          * of a frame from the camera. Note that switching pipelines on-the-fly
          * (while a streaming session is in flight) *IS* supported.
          */
-        FTClibPipeline pipeline = new FTClibPipeline();
-        phoneCam.setPipeline(pipeline);
+//        UGRectRingPipeline pipeline = new UGRectRingPipeline();
+//        phoneCam.setPipeline(pipeline);
 
         /*
          * Open the connection to the camera device. New in v1.4.0 is the ability
@@ -54,25 +56,25 @@ public class PipelineTest extends LinearOpMode
          *
          * If you really want to open synchronously, the old method is still available.
          */
-        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                /*
-                 * Tell the camera to start streaming images to us! Note that you must make sure
-                 * the resolution you specify is supported by the camera. If it is not, an exception
-                 * will be thrown.
-                 *
-                 * Also, we specify the rotation that the camera is used in. This is so that the image
-                 * from the camera sensor can be rotated such that it is always displayed with the image upright.
-                 * For a front facing camera, rotation is defined assuming the user is looking at the screen.
-                 * For a rear facing camera or a webcam, rotation is defined assuming the camera is facing
-                 * away from the user.
-                 */
-                phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-            }
-        });
+//        phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+//        {
+//            @Override
+//            public void onOpened()
+//            {
+//                /*
+//                 * Tell the camera to start streaming images to us! Note that you must make sure
+//                 * the resolution you specify is supported by the camera. If it is not, an exception
+//                 * will be thrown.
+//                 *
+//                 * Also, we specify the rotation that the camera is used in. This is so that the image
+//                 * from the camera sensor can be rotated such that it is always displayed with the image upright.
+//                 * For a front facing camera, rotation is defined assuming the user is looking at the screen.
+//                 * For a rear facing camera or a webcam, rotation is defined assuming the camera is facing
+//                 * away from the user.
+//                 */
+//                phoneCam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+//            }
+//        });
 
         telemetry.addLine("Waiting for start");
         telemetry.update();
@@ -87,15 +89,20 @@ public class PipelineTest extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
-            dashboardTelemetry.addData("top",pipeline.getTopAverage());
-            dashboardTelemetry.addData("bottom",pipeline.getBottomAverage());
-            telemetry.addData("Frame Count", phoneCam.getFrameCount());
-            telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
-            telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
-            telemetry.addData("Pipeline time ms", phoneCam.getPipelineTimeMs());
-            telemetry.addData("Overhead time ms", phoneCam.getOverheadTimeMs());
-            telemetry.addData("Theoretical max FPS", phoneCam.getCurrentPipelineMaxFps());
-            telemetry.update();
+            UGRectDetector.Stack stack = UGRectDetector.getStack();
+            dashboardTelemetry.addData("stack",stack);
+            dashboardTelemetry.addData("bottom",UGRectDetector.getBottomAverage());
+            dashboardTelemetry.addData("top",UGRectDetector.getTopAverage());
+
+//            dashboardTelemetry.addData("top",pipeline.getTopAverage());
+//            dashboardTelemetry.addData("bottom",pipeline.getBottomAverage());
+//            telemetry.addData("Frame Count", phoneCam.getFrameCount());
+//            telemetry.addData("FPS", String.format("%.2f", phoneCam.getFps()));
+//            telemetry.addData("Total frame time ms", phoneCam.getTotalFrameTimeMs());
+//            telemetry.addData("Pipeline time ms", phoneCam.getPipelineTimeMs());
+//            telemetry.addData("Overhead time ms", phoneCam.getOverheadTimeMs());
+//            telemetry.addData("Theoretical max FPS", phoneCam.getCurrentPipelineMaxFps());
+//            telemetry.update();
             dashboardTelemetry.update();
 
             /*

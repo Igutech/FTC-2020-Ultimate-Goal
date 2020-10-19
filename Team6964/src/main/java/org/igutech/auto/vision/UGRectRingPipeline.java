@@ -9,7 +9,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 @Config
-public class FTClibPipeline extends OpenCvPipeline {
+public class UGRectRingPipeline extends OpenCvPipeline {
 
     private Mat matYCrCb = new Mat();
     private Mat matCbBottom = new Mat();
