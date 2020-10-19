@@ -39,8 +39,6 @@ public class Hardware {
         motors.get("frontleft").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motors.get("backright").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motors.get("backleft").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motors.get("shooterLeft").setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motors.get("shooterRight").setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 
         motors.get("frontright").setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
