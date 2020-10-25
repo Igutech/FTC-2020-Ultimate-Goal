@@ -4,14 +4,12 @@ import com.acmerobotics.dashboard.config.Config;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
-
 @Config
-public class FTClibPipeline extends OpenCvPipeline {
+public class UGRectRingPipeline extends OpenCvPipeline {
 
     private Mat matYCrCb = new Mat();
     private Mat matCbBottom = new Mat();
@@ -21,19 +19,17 @@ public class FTClibPipeline extends OpenCvPipeline {
 
     private double topAverage;
     private double bottomAverage;
-
+    private int threshold = 15;
     public static double topRectWidthPercentage = 0.25;
     public static double topRectHeightPercentage = 0.25;
     public static double bottomRectWidthPercentage = 0.25;
     public static double bottomRectHeightPercentage = 0.25;
     public static int rectangleWidth = 10;
     public static int rectangleHeight = 10;
-    public static int rectangleDistance = 10;
 
     @Override
     public Mat processFrame(Mat input) {
         Imgproc.cvtColor(input, matYCrCb, Imgproc.COLOR_RGB2YCrCb);
-
 
         Rect topRect = new Rect(
                 (int) (matYCrCb.width() * topRectWidthPercentage),
@@ -79,4 +75,13 @@ public class FTClibPipeline extends OpenCvPipeline {
     public double getBottomAverage() {
         return bottomAverage;
     }
+
+    public void setThreshold(int threshold) {
+        this.threshold = threshold;
+    }
+
+    public int getThreshold(){
+        return threshold;
+    }
+
 }
