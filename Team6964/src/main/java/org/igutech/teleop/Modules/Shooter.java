@@ -2,7 +2,6 @@ package org.igutech.teleop.Modules;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -10,7 +9,7 @@ import org.igutech.auto.util.LoggingUtil;
 import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
-import org.igutech.utils.control.PIDController;
+import org.igutech.utils.control.PIDFController;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -23,12 +22,13 @@ public class Shooter extends Module {
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     private GamepadService gamepadService;
     private BulkRead bulkRead;
+
     public static double pShooterLeft = 0.008;
     public static double iShooterLeft = 0.00;
     public static double dShooterLeft = 0.00;
-
+    public static double kF = 0;
     public static double motorVelo=1200;
-    private PIDController pidController;
+    private PIDFController PIDFController;
     private boolean veloControlActive = false;
     private ButtonToggle veloToggle;
     PrintWriter pw;
@@ -46,7 +46,7 @@ public class Shooter extends Module {
     public void init() {
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
         bulkRead = (BulkRead) Teleop.getInstance().getService("BulkRead");
-        pidController = new PIDController(pShooterLeft, iShooterLeft, dShooterLeft);
+        PIDFController = new PIDFController(pShooterLeft, iShooterLeft, dShooterLeft,kF);
         veloToggle = new ButtonToggle(2, "x", () -> {
         }, () -> {
         });
@@ -73,9 +73,9 @@ public class Shooter extends Module {
             time.add(System.currentTimeMillis()-startTime);
             velo.add(bulkRead.getShooterLeftVelo());
 
-            pidController.setkP(pShooterLeft);
-            pidController.updateSetpoint(motorVelo);
-            double autoPower = pidController.update(bulkRead.getShooterLeftVelo());
+            PIDFController.setkP(pShooterLeft);
+            PIDFController.updateSetpoint(motorVelo);
+            double autoPower = PIDFController.update(bulkRead.getShooterLeftVelo());
             power.add(autoPower);
             error.add(motorVelo-bulkRead.getShooterLeftVelo());
             dashboardTelemetry.addData("autoPower",autoPower);

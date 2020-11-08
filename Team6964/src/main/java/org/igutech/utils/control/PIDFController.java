@@ -6,18 +6,19 @@ import org.apache.commons.math3.util.FastMath;
  * Created by Kevin on 7/21/2018.
  */
 
-public class PIDController implements BasicController {
+public class PIDFController implements BasicController {
 
     private long currentTimeMillis;
-    private double kP, kI, kD;
+    private double kP, kI, kD, kF;
     private double iTerm = 0;
     private double prevError = 0;
     private double sp;
 
-    public PIDController(double kP, double kI, double kD) {
+    public PIDFController(double kP, double kI, double kD, double kF) {
         this.kP = kP;
         this.kI = kI;
         this.kD = kD;
+        this.kF = kF;
     }
 
     @Override
@@ -38,10 +39,10 @@ public class PIDController implements BasicController {
         iTerm += error(pv) * timeOffset;
         double i = kI * iTerm;
         double d = kD * ((error(pv) - prevError) / timeOffset);
-
+        double f = kF * sp;
         currentTimeMillis = System.currentTimeMillis();
         prevError = error(pv);
-        return p + i + d;
+        return p + i + d + f;
     }
 
     public void reset(double pv) {
@@ -81,6 +82,10 @@ public class PIDController implements BasicController {
 
     public void setkD(double kD) {
         this.kD = kD;
+    }
+
+    public void setkF(double kF) {
+        this.kF = kF;
     }
 
 
