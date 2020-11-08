@@ -150,6 +150,12 @@ public class SampleMecanumDrive extends MecanumDrive {
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
         setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -207,7 +213,16 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
         throw new AssertionError();
     }
+    public int getLeft(){
+        return leftFront.getCurrentPosition();
+    }
 
+    public int getRight(){
+        return leftRear.getCurrentPosition();
+    }
+    public int getStrafe(){
+        return rightFront.getCurrentPosition();
+    }
     public void update() {
         updatePoseEstimate();
 

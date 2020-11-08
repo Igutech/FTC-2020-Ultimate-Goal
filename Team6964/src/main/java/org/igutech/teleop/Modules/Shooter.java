@@ -2,7 +2,6 @@ package org.igutech.teleop.Modules;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.igutech.auto.util.LoggingUtil;
@@ -23,10 +22,11 @@ public class Shooter extends Module {
     private GamepadService gamepadService;
     private BulkRead bulkRead;
 
-    public static double pShooterLeft = 0.008;
-    public static double iShooterLeft = 0.00;
-    public static double dShooterLeft = 0.00;
+    public static double kP = 0.008;
+    public static double kI = 0.00;
+    public static double kD = 0.0004;
     public static double kF = 0;
+
     public static double motorVelo=1200;
     private PIDFController PIDFController;
     private boolean veloControlActive = false;
@@ -36,8 +36,6 @@ public class Shooter extends Module {
     ArrayList<Double> velo = new ArrayList<>();
     ArrayList<Double> power = new ArrayList<>();
     ArrayList<Double> error = new ArrayList<>();
-    DcMotorEx leftMotor = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("shooterLeft");
-    DcMotorEx rightMotor = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("shooterRight");
     public Shooter() {
         super(500, "Shooter");
     }
@@ -46,7 +44,7 @@ public class Shooter extends Module {
     public void init() {
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
         bulkRead = (BulkRead) Teleop.getInstance().getService("BulkRead");
-        PIDFController = new PIDFController(pShooterLeft, iShooterLeft, dShooterLeft,kF);
+        PIDFController = new PIDFController(kP, kI, kD,kF);
         veloToggle = new ButtonToggle(2, "x", () -> {
         }, () -> {
         });
@@ -73,9 +71,12 @@ public class Shooter extends Module {
             time.add(System.currentTimeMillis()-startTime);
             velo.add(bulkRead.getShooterLeftVelo());
 
-            PIDFController.setkP(pShooterLeft);
+            PIDFController.setkP(kP);
+            PIDFController.setkI(kI);
+            PIDFController.setkD(kD);
             PIDFController.updateSetpoint(motorVelo);
-            double autoPower = PIDFController.update(bulkRead.getShooterLeftVelo());
+            double autoPower = PIDFController.update(bulkRead.getShooterRightVelo());
+
             power.add(autoPower);
             error.add(motorVelo-bulkRead.getShooterLeftVelo());
             dashboardTelemetry.addData("autoPower",autoPower);
@@ -86,11 +87,10 @@ public class Shooter extends Module {
             Teleop.getInstance().getHardware().getMotors().get("shooterRight").setPower(0.0);
         }
 
-
         dashboardTelemetry.addData("manual", manualPower);
         dashboardTelemetry.addData("Target Velo", motorVelo);
-        dashboardTelemetry.addData("MotorLeft Velo", leftMotor.getVelocity());
-        dashboardTelemetry.addData("MotorRight Velo",rightMotor.getVelocity());
+        dashboardTelemetry.addData("MotorLeft Velo", bulkRead.getShooterLeftVelo());
+        dashboardTelemetry.addData("MotorRight Velo",bulkRead.getShooterRightVelo());
         dashboardTelemetry.addData("PID Active ", veloControlActive);
         dashboardTelemetry.update();
 

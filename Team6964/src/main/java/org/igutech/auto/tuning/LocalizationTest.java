@@ -63,6 +63,11 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.addData("left encoder", drive.getLeft());
+            telemetry.addData("right encoder", drive.getRight());
+//            System.out.println("left encoder: "+ drive.getLeft());
+//            System.out.println("right encoder: "+drive.getRight());
+
             telemetry.update();
             long diff = System.nanoTime() - nanos;
             System.out.println("Localization Test time: "+(diff/1000000));
