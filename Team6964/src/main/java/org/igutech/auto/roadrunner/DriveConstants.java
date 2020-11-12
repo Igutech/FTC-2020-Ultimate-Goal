@@ -81,7 +81,7 @@ public class DriveConstants {
      * Maximum Angular Velocity is calculated as maximum velocity / (trackWidth / 2) * (180 / Math.PI)
      */
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
-            45, 45, 0.0,
+            60, 60, 0.0,
             Math.toRadians(180), Math.toRadians(180), 0.0
     );
 
