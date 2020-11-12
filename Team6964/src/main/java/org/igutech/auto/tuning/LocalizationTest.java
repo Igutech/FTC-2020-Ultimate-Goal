@@ -63,6 +63,7 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
+            telemetry.addData("wrap angle", Math.toDegrees(angleWrap(poseEstimate.getHeading()) ));
             telemetry.addData("left encoder", drive.getLeft());
             telemetry.addData("right encoder", drive.getRight());
 //            System.out.println("left encoder: "+ drive.getLeft());
@@ -74,5 +75,8 @@ public class LocalizationTest extends LinearOpMode {
 
         }
 
+    }
+    public double angleWrap(double angle){
+        return (angle+(2*Math.PI))%(2*Math.PI);
     }
 }
