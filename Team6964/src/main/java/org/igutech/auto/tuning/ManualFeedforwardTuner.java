@@ -16,11 +16,16 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.igutech.auto.roadrunner.DriveConstants;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
+import org.igutech.auto.util.LoggingUtil;
+
 import static org.igutech.auto.roadrunner.DriveConstants.kA;
 import static org.igutech.auto.roadrunner.DriveConstants.kStatic;
 import static org.igutech.auto.roadrunner.DriveConstants.kV;
-import java.util.Objects;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Objects;
 
 
 /*
@@ -41,6 +46,15 @@ public class ManualFeedforwardTuner extends LinearOpMode {
     private FtcDashboard dashboard = FtcDashboard.getInstance();
 
     private SampleMecanumDrive drive;
+    PrintWriter pw;
+    ArrayList<Double> time = new ArrayList<>();
+    ArrayList<Double> leftEncoderVelo = new ArrayList<>();
+    ArrayList<Double> leftEncoderTick = new ArrayList<>();
+    ArrayList<Double> rightEncoderVelo = new ArrayList<>();
+    ArrayList<Double> rightEncoderTick = new ArrayList<>();
+    ArrayList<Double> strafeEncoderVelo = new ArrayList<>();
+    ArrayList<Double> strafeEncoderTick = new ArrayList<>();
+    long startTime;
 
     private static MotionProfile generateProfile(boolean movingForward) {
         MotionState start = new MotionState(movingForward ? 0 : DISTANCE, 0, 0, 0);
@@ -53,6 +67,11 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        try {
+            pw = new PrintWriter(LoggingUtil.getLogFile("info.csv"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         drive = new SampleMecanumDrive(hardwareMap);
@@ -71,10 +90,19 @@ public class ManualFeedforwardTuner extends LinearOpMode {
         MotionProfile activeProfile = generateProfile(true);
         double profileStart = clock.seconds();
 
-
+        startTime = System.currentTimeMillis();
+        pw.println("time,leftEncoderTick,leftEncoderVelo,rightEncoderTick,rightEncoderVelo, strafeEncoderTick, starfeEncoderVelo");
         while (!isStopRequested()) {
             // calculate and set the motor power
             double profileTime = clock.seconds() - profileStart;
+            time.add(profileTime);
+            leftEncoderTick.add((double) drive.getWheelPositions().get(0));
+            leftEncoderTick.add((double) drive.getWheelVelocities().get(0));
+
+            rightEncoderTick.add(drive.getWheelPositions().get(1));
+            rightEncoderVelo.add(drive.getWheelVelocities().get(1));
+            strafeEncoderTick.add(drive.getWheelPositions().get(2));
+            strafeEncoderVelo.add(drive.getWheelVelocities().get(2));
 
             if (profileTime > activeProfile.duration()) {
                 // generate a new profile
@@ -100,5 +128,9 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
             telemetry.update();
         }
+        for (int i = 0; i < time.size(); i++) {
+            pw.println((time.get(i)) + "," + leftEncoderTick.get(i) + "," + leftEncoderVelo.get(i) + "," + rightEncoderTick.get(i) + "," +  rightEncoderVelo.get(i) + ","+ strafeEncoderTick.get(i) + "," +strafeEncoderVelo.get(i) + ",");
+        }
+        pw.close();
     }
 }
