@@ -89,7 +89,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
         boolean movingForwards = true;
         MotionProfile activeProfile = generateProfile(true);
         double profileStart = clock.seconds();
-
+        int i=0;
         startTime = System.currentTimeMillis();
         pw.println("time,leftEncoderTick,leftEncoderVelo,rightEncoderTick,rightEncoderVelo, strafeEncoderTick, starfeEncoderVelo");
         while (!isStopRequested()) {
@@ -103,6 +103,8 @@ public class ManualFeedforwardTuner extends LinearOpMode {
             rightEncoderVelo.add(drive.getWheelVelocities().get(1));
             strafeEncoderTick.add(drive.getWheelPositions().get(2));
             strafeEncoderVelo.add(drive.getWheelVelocities().get(2));
+            //pw.println((time.get(i)) + "," + leftEncoderTick.get(i) + "," + leftEncoderVelo.get(i) + "," + rightEncoderTick.get(i) + "," +  rightEncoderVelo.get(i) + ","+ strafeEncoderTick.get(i) + "," +strafeEncoderVelo.get(i) + ",");
+            pw.println(profileTime+","+drive.getWheelPositions().get(0) + "," + drive.getWheelVelocities().get(0) + "," + drive.getWheelPositions().get(1) + "," + drive.getWheelVelocities().get(1)  + ","+ drive.getWheelPositions().get(2) + ","+ drive.getWheelVelocities().get(2) + ",");
 
             if (profileTime > activeProfile.duration()) {
                 // generate a new profile
@@ -122,14 +124,14 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
             Pose2d poseVelo = Objects.requireNonNull(drive.getPoseVelocity(), "poseVelocity() must not be null. Ensure that the getWheelVelocities() method has been overridden in your localizer.");
             double currentVelo = poseVelo.getX();
-
+            telemetry.addData("left encoder tick", drive.getWheelPositions().get(0));
+            telemetry.addData("right encoder tick", drive.getWheelPositions().get(1));
+            telemetry.addData("strafe encoder tick", drive.getWheelPositions().get(2));
             telemetry.addData("poseVelocity", currentVelo);
             telemetry.addData("error", currentVelo - motionState.getV());
 
             telemetry.update();
-        }
-        for (int i = 0; i < time.size(); i++) {
-            pw.println((time.get(i)) + "," + leftEncoderTick.get(i) + "," + leftEncoderVelo.get(i) + "," + rightEncoderTick.get(i) + "," +  rightEncoderVelo.get(i) + ","+ strafeEncoderTick.get(i) + "," +strafeEncoderVelo.get(i) + ",");
+            i=i+1;
         }
         pw.close();
     }
