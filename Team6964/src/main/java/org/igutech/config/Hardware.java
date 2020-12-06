@@ -31,7 +31,7 @@ public class Hardware {
         motors.put("backright", hardwareMap.dcMotor.get("backright"));
         motors.put("shooterLeft", hardwareMap.dcMotor.get("shooterLeft"));
         motors.put("shooterRight", hardwareMap.dcMotor.get("shooterRight"));
-
+        motors.put("intake", hardwareMap.dcMotor.get("intake"));
 
 
 
