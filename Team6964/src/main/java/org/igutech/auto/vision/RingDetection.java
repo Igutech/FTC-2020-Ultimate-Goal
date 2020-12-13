@@ -18,7 +18,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
  * original Android camera API
  */
 @TeleOp
-public class InternalCamera1Example extends LinearOpMode {
+public class RingDetection extends LinearOpMode {
     OpenCvCamera phoneCam;
 
     @Override
