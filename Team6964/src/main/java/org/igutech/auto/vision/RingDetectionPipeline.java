@@ -14,33 +14,42 @@ import java.util.ArrayList;
 
 public class RingDetectionPipeline extends OpenCvPipeline {
 
-    private Mat frame = new Mat();
-    private Mat hsvMat = new Mat();
-    private Mat mask = new Mat();
-    private Mat bitwise = new Mat();
-    private ArrayList<MatOfPoint> contours = new ArrayList<>();
-    private Mat hierarchy = new Mat();
-    private MatOfPoint2f approxCurve = new MatOfPoint2f();
 
     @Override
     public Mat processFrame(Mat input) {
-        frame = input;
-        Imgproc.cvtColor(frame, hsvMat, Imgproc.COLOR_RGB2HSV);
+        Mat hsvMat = new Mat();
+        Mat mask = new Mat();
+        Mat bitwise = new Mat();
+        ArrayList<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        MatOfPoint2f approxCurve = new MatOfPoint2f();
+
+        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
         Core.inRange(hsvMat, new Scalar(8, 108, 115), new Scalar(43, 253, 247), mask);
         Core.bitwise_and(hsvMat, hsvMat, bitwise, mask);
+
         Imgproc.findContours(mask, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+
         for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
             if (contourArea > 1000) {
                 Imgproc.drawContours(bitwise, contours, contourIdx, new Scalar(255, 0, 0), 3);
-                MatOfPoint2f contourPoints = new MatOfPoint2f(contours.get(contourIdx).toArray());
-                double permi = Imgproc.arcLength(contourPoints, true);
-                Imgproc.approxPolyDP(contourPoints, approxCurve, permi * 0.02, true);
+                MatOfPoint2f newPoint = new MatOfPoint2f(contours.get(contourIdx).toArray());
+                double permi = Imgproc.arcLength(newPoint, true);
+                Imgproc.approxPolyDP(newPoint, approxCurve, permi * 0.02, true);
                 MatOfPoint points = new MatOfPoint(approxCurve.toArray());
+
                 Rect rect = Imgproc.boundingRect(points);
-                Imgproc.rectangle(frame, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 0, 255), 3);
+                Imgproc.rectangle(input, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 0, 255), 3);
+                Imgproc.putText(input,"Points: "+rect.width+" "+rect.height,new Point(rect.x + rect.width+ 20 ,rect.y + 20),Imgproc.FONT_HERSHEY_SIMPLEX, .7, new Scalar(0, 255, 0), 2);
             }
+
         }
-        return frame;
+
+        hsvMat.release();
+        mask.release();
+        bitwise.release();
+        hierarchy.release();
+        return input; // Return the input mat
     }
 }
