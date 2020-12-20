@@ -32,7 +32,7 @@ public class RingDetectionPipeline extends OpenCvPipeline {
 
         for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
-            if (contourArea > 1000) {
+            if (contourArea > 500) {
                 Imgproc.drawContours(bitwise, contours, contourIdx, new Scalar(255, 0, 0), 3);
                 MatOfPoint2f newPoint = new MatOfPoint2f(contours.get(contourIdx).toArray());
                 double permi = Imgproc.arcLength(newPoint, true);
