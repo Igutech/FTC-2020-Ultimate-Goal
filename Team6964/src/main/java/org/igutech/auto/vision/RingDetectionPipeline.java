@@ -1,5 +1,8 @@
 package org.igutech.auto.vision;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -32,7 +35,7 @@ public class RingDetectionPipeline extends OpenCvPipeline {
 
         for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
             double contourArea = Imgproc.contourArea(contours.get(contourIdx));
-            if (contourArea > 500) {
+            if (contourArea > 300) {
                 Imgproc.drawContours(bitwise, contours, contourIdx, new Scalar(255, 0, 0), 3);
                 MatOfPoint2f newPoint = new MatOfPoint2f(contours.get(contourIdx).toArray());
                 double permi = Imgproc.arcLength(newPoint, true);

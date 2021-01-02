@@ -8,6 +8,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
+
 @Config
 public class UGRectRingPipeline extends OpenCvPipeline {
 
@@ -80,8 +81,9 @@ public class UGRectRingPipeline extends OpenCvPipeline {
         this.threshold = threshold;
     }
 
-    public int getThreshold(){
+    public int getThreshold() {
         return threshold;
     }
+
 
 }
