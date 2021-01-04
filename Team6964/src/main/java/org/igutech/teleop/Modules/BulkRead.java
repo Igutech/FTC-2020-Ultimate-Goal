@@ -10,11 +10,11 @@ import java.util.List;
 
 public class BulkRead extends Service {
 
-    private DcMotorEx frontLeft, frontRight, backLeft, backRight,shooterLeft,shooterRight; // Motor Objects
-    private long frontLeftTick, frontRightTick, backLeftTick, backRightTick,shooterLeftTick,shooterRightTick; // Encoder Values
+    private DcMotorEx frontLeft, frontRight, backLeft, backRight, frontShooter, backShooter; // Motor Objects
+    private long frontLeftTick, frontRightTick, backLeftTick, backRightTick, frontShooterTick, backShooterTick; // Encoder Values
 
 
-    private double frontLeftVelo, frontRightVelo, backLeftVelo, backRightVelo,shooterLeftVelo,shooterRightVelo;
+    private double frontLeftVelo, frontRightVelo, backLeftVelo, backRightVelo, frontShooterVelo, backShooterVelo;
     List<LynxModule> allHubs;
 
     public BulkRead() {
@@ -28,8 +28,8 @@ public class BulkRead extends Service {
         frontRight = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("frontright");  // or change these strings to match your existing Robot Configuration.
         backLeft = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("backleft");
         backRight = (DcMotorEx) Teleop.getInstance().getHardware().getMotors().get("backright");
-        shooterLeft=(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("shooterLeft");
-        shooterRight=(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("shooterRight");
+        frontShooter =(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("frontshooter");
+        backShooter =(DcMotorEx)Teleop.getInstance().getHardware().getMotors().get("backshooter");
         allHubs = Teleop.getInstance().hardwareMap.getAll(LynxModule.class);
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -46,32 +46,24 @@ public class BulkRead extends Service {
         frontRightTick = frontRight.getCurrentPosition();   // There is no penalty for doing more `get` operations in this cycle,
         backLeftTick = backLeft.getCurrentPosition();   // but they will return the same data.e4 = m4.getCurrentPosition();
         backRightTick = backRight.getCurrentPosition();
-        shooterLeftTick=shooterLeft.getCurrentPosition();
-        shooterRightTick=shooterRight.getCurrentPosition();
+        frontShooterTick = frontShooter.getCurrentPosition();
+        backShooterTick = backShooter.getCurrentPosition();
 
         frontLeftVelo = frontLeft.getVelocity();
         frontRightVelo = frontRight.getVelocity();
         backLeftVelo = backLeft.getVelocity();
         backRightVelo = backRight.getVelocity();
-        shooterLeftVelo=shooterLeft.getVelocity();
-        shooterRightVelo=shooterRight.getVelocity();
+        frontShooterVelo = frontShooter.getVelocity();
+        backShooterVelo = backShooter.getVelocity();
 
     }
 
-    public long getShooterLeftTick() {
-        return shooterLeftTick;
+    public double getFrontShooterVelo() {
+        return frontShooterVelo;
     }
 
-    public long getShooterRightTick() {
-        return shooterRightTick;
-    }
-
-    public double getShooterLeftVelo() {
-        return shooterLeftVelo;
-    }
-
-    public double getShooterRightVelo() {
-        return shooterRightVelo;
+    public double getBackShooterVelo() {
+        return backShooterVelo;
     }
 
     public long getLeftOdoTick() {

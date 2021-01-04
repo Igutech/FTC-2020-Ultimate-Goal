@@ -1,5 +1,6 @@
 package org.igutech.config;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -13,6 +14,7 @@ public class Hardware {
     private HardwareMap hardwareMap;
     private Map<String, DcMotor> motors;
     private Map<String, Servo> servos;
+    private Map<String, CRServo> CRservos;
     private Map<String, DigitalChannel> touchSensors;
 
     /**
@@ -24,16 +26,20 @@ public class Hardware {
         this.hardwareMap = hardwareMap;
         this.motors = new HashMap<>();
         this.servos = new HashMap<>();
+        this.CRservos = new HashMap<>();
         this.touchSensors = new HashMap<>();
         motors.put("frontleft", hardwareMap.dcMotor.get("frontleft"));
         motors.put("frontright", hardwareMap.dcMotor.get("frontright"));
         motors.put("backleft", hardwareMap.dcMotor.get("backleft"));
         motors.put("backright", hardwareMap.dcMotor.get("backright"));
-        motors.put("shooterLeft", hardwareMap.dcMotor.get("shooterLeft"));
-        motors.put("shooterRight", hardwareMap.dcMotor.get("shooterRight"));
+        motors.put("frontshooter", hardwareMap.dcMotor.get("frontshooter"));
+        motors.put("backshooter", hardwareMap.dcMotor.get("backshooter"));
         motors.put("intake", hardwareMap.dcMotor.get("intake"));
 
+        //CRservos.put("intakeServo",hardwareMap.crservo.get("intakeServo"));
 
+        servos.put("liftServo",hardwareMap.servo.get("liftServo"));
+        servos.put("shooterServo",hardwareMap.servo.get("shooterServo"));
 
         motors.get("frontright").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motors.get("frontleft").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -85,6 +91,9 @@ public class Hardware {
      */
     public Map<String, Servo> getServos() {
         return servos;
+    }
+    public Map<String, CRServo> getCRServos() {
+        return CRservos;
     }
 
     /**

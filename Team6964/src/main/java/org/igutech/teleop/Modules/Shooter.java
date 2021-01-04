@@ -4,17 +4,13 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.igutech.auto.util.LoggingUtil;
 import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 import org.igutech.utils.control.PIDFController;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-
-
+//back motor=0.5 power and front =0.6
+//powershot back=-6 front = 0.55
 @Config
 public class Shooter extends Module {
     FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -22,75 +18,90 @@ public class Shooter extends Module {
     private GamepadService gamepadService;
     private BulkRead bulkRead;
 
-    public static double kP = 0.008;
-    public static double kI = 0.00;
-    public static double kD = 0.0004;
-    public static double kF = 0;
+    public static double frontShooterkP = 0.013;
+    public static double frontShooterkI = 0.00;
+    public static double frontShooterkD = 0.0;
+    public static double frontShooterkF = 0.0002;
 
-    public static double motorVelo=1200;
-    private PIDFController PIDFController;
+    public static double backShooterkP = 0.00013;
+    public static double backShooterkI = 0.00;
+    public static double backShooterkD = 0.00;
+    public static double backShooterkF = 0.0;
+
+    public static double frontShooterTargetVelo = -1370;
+    public static double backShooterTargetVelo = -400;
+    public static double frontShooterPowershotVelo = -1220;
+    private PIDFController frontShooterController;
+    private PIDFController backShooterController;
     private boolean veloControlActive = false;
     private ButtonToggle veloToggle;
-    PrintWriter pw;
-    ArrayList<Long> time = new ArrayList<>();
-    ArrayList<Double> velo = new ArrayList<>();
-    ArrayList<Double> power = new ArrayList<>();
-    ArrayList<Double> error = new ArrayList<>();
+    private ButtonToggle powershotToggle;
+    public static double frontPower=-0.5;
+    public static double backPower=-0.4;
+
     public Shooter() {
         super(500, "Shooter");
     }
-    long startTime;
+
     @Override
     public void init() {
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
         bulkRead = (BulkRead) Teleop.getInstance().getService("BulkRead");
-        PIDFController = new PIDFController(kP, kI, kD,kF);
-        veloToggle = new ButtonToggle(2, "x", () -> {
+        frontShooterController = new PIDFController(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
+        backShooterController = new PIDFController(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
+        veloToggle = new ButtonToggle(1, "right_bumper", () -> {
         }, () -> {
         });
         veloToggle.init();
-        try {
-            pw = new PrintWriter(LoggingUtil.getLogFile("shooter.csv"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        startTime = System.currentTimeMillis();
-        pw.println("time,velocity,power,error,setpoint");
+        powershotToggle = new ButtonToggle(1,"b",()->{
+        },()->{});
+        powershotToggle.init();
+
     }
 
     @Override
     public void loop() {
 
         veloToggle.loop();
+        powershotToggle.loop();
         veloControlActive = veloToggle.getState();
-        double manualPower = gamepadService.getAnalog(2, "right_stick_y");
+        double manualPower = gamepadService.getAnalog(2, "right_trigger");
         if (Math.abs(manualPower) != 0.0) {
-            Teleop.getInstance().getHardware().getMotors().get("shooterLeft").setPower(manualPower);
-            Teleop.getInstance().getHardware().getMotors().get("shooterRight").setPower(manualPower);
+            Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(-manualPower);
+            Teleop.getInstance().getHardware().getMotors().get("backshooter").setPower(-manualPower);
         } else if (veloControlActive) {
-            time.add(System.currentTimeMillis()-startTime);
-            velo.add(bulkRead.getShooterLeftVelo());
+            frontShooterController.setPIDFValues(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
+            frontShooterController.updateSetpoint(frontShooterTargetVelo);
+            backShooterController.setPIDFValues(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
+            backShooterController.updateSetpoint(backShooterTargetVelo);
+            double frontShooterPower = frontShooterController.update(bulkRead.getFrontShooterVelo());
+            double backShooterPower = backShooterController.update(bulkRead.getBackShooterVelo());
 
-            PIDFController.setkP(kP);
-            PIDFController.setkI(kI);
-            PIDFController.setkD(kD);
-            PIDFController.updateSetpoint(motorVelo);
-            double autoPower = PIDFController.update(bulkRead.getShooterRightVelo());
+            Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(frontShooterPower);
+            Teleop.getInstance().getHardware().getMotors().get("backshooter").setPower(-0.5);
 
-            power.add(autoPower);
-            error.add(motorVelo-bulkRead.getShooterLeftVelo());
-            dashboardTelemetry.addData("autoPower",autoPower);
-            Teleop.getInstance().getHardware().getMotors().get("shooterLeft").setPower(-autoPower);
-            Teleop.getInstance().getHardware().getMotors().get("shooterRight").setPower(-autoPower);
+            dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
+            dashboardTelemetry.addData("backShooterPower", backShooterPower);
+        } else if(powershotToggle.getState()){
+            frontShooterController.setPIDFValues(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
+            frontShooterController.updateSetpoint(frontShooterPowershotVelo);
+            double frontShooterPower = frontShooterController.update(bulkRead.getFrontShooterVelo());
+
+            Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(frontShooterPower);
+            Teleop.getInstance().getHardware().getMotors().get("backshooter").setPower(-0.6);
+
+            dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else {
-            Teleop.getInstance().getHardware().getMotors().get("shooterLeft").setPower(0.0);
-            Teleop.getInstance().getHardware().getMotors().get("shooterRight").setPower(0.0);
+            Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(0.0);
+            Teleop.getInstance().getHardware().getMotors().get("backshooter").setPower(0.0);
         }
-
-        dashboardTelemetry.addData("manual", manualPower);
-        dashboardTelemetry.addData("Target Velo", motorVelo);
-        dashboardTelemetry.addData("MotorLeft Velo", bulkRead.getShooterLeftVelo());
-        dashboardTelemetry.addData("MotorRight Velo",bulkRead.getShooterRightVelo());
+//            Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(frontPower);
+//            Teleop.getInstance().getHardware().getMotors().get("backshooter").setPower(backPower);
+        dashboardTelemetry.addData("manualPower", manualPower);
+        dashboardTelemetry.addData("Target frontShooter Velo", frontShooterTargetVelo);
+        dashboardTelemetry.addData("Target backShooter Velo", backShooterTargetVelo);
+        dashboardTelemetry.addData("Front Shooter Velo", bulkRead.getFrontShooterVelo());
+        dashboardTelemetry.addData("Back Shooter Velo", bulkRead.getBackShooterVelo());
         dashboardTelemetry.addData("PID Active ", veloControlActive);
         dashboardTelemetry.update();
 
@@ -98,9 +109,6 @@ public class Shooter extends Module {
 
     @Override
     public void stop() {
-        for(int i=0;i<time.size();i++){
-            pw.println((time.get(i))+","+velo.get(i)+","+power.get(i)+","+error.get(i)+","+"1200");
-        }
-        pw.close();
+
     }
 }

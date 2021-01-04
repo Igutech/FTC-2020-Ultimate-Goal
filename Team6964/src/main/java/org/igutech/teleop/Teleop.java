@@ -2,6 +2,7 @@ package org.igutech.teleop;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.BulkRead;
@@ -9,6 +10,7 @@ import org.igutech.teleop.Modules.DisconnectWorkaround;
 import org.igutech.teleop.Modules.DriveTrain;
 import org.igutech.teleop.Modules.GamepadService;
 import org.igutech.teleop.Modules.GoToPoint;
+import org.igutech.teleop.Modules.Index;
 import org.igutech.teleop.Modules.Intake;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.ThreeWheelOdometry;
@@ -18,10 +20,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@TeleOp(name="TeleOp", group="Igutech")
+@TeleOp(name = "TeleOp", group = "Igutech")
 public class Teleop extends OpMode {
 
     private static Teleop instance;
+
     public static Teleop getInstance() {
         return instance;
     }
@@ -29,6 +32,8 @@ public class Teleop extends OpMode {
     private ArrayList<Module> modules;
 
     private Hardware hardware;
+    private ElapsedTime elapsedTime;
+    private int loops = 0;
 
     private void registerModules() {
 
@@ -36,19 +41,21 @@ public class Teleop extends OpMode {
         modules.add(new ThreeWheelOdometry());
         modules.add(new Shooter());
         modules.add(new Intake());
+        modules.add(new Index());
 
-        
+
     }
 
     private void registerServices() {
         modules.add(new DisconnectWorkaround());
-        modules.add(new GamepadService(gamepad1,gamepad2));
+        modules.add(new GamepadService(gamepad1, gamepad2));
         modules.add(new TimerService());
         modules.add(new BulkRead());
     }
 
     /**
      * Get a list of all registered modules and services
+     *
      * @return a list of all registered modules
      */
     public List<Module> getModules() {
@@ -57,6 +64,7 @@ public class Teleop extends OpMode {
 
     /**
      * Register and initialize a new module
+     *
      * @param module Module to initialize
      */
     public void insmod(Module module) {
@@ -67,19 +75,21 @@ public class Teleop extends OpMode {
 
     /**
      * Get a list of all registered services
+     *
      * @return A list of all registered services
      */
     public List<Service> getServices() {
         List<Service> services = new ArrayList<>();
         for (Module m : getModules()) {
             if (m instanceof Service)
-                services.add((Service)m);
+                services.add((Service) m);
         }
         return services;
     }
 
     /**
      * Get a service by its registered name
+     *
      * @param name The name of the service
      * @return The service, or null if not found
      */
@@ -99,6 +109,7 @@ public class Teleop extends OpMode {
 
     /**
      * Get a module or service by its name
+     *
      * @param name Name of module or service
      * @return Module or service, or null if not found
      */
@@ -111,6 +122,7 @@ public class Teleop extends OpMode {
 
     /**
      * Get the hardware object representing the robot
+     *
      * @return Hardware object
      */
     public Hardware getHardware() {
@@ -143,21 +155,29 @@ public class Teleop extends OpMode {
         for (Module m : modules) {
             if (m.isEnabled()) m.start();
         }
+        elapsedTime = new ElapsedTime((ElapsedTime.Resolution.MILLISECONDS));
     }
 
     @Override
     public void loop() {
+
         try {
             long nanos = System.nanoTime();
             for (Module m : modules) {
                 if (m.isEnabled()) m.loop();
             }
             long diff = System.nanoTime() - nanos;
-            if (diff < 5000L)
-                Thread.sleep(0, (int) (5000 - diff));
-            System.out.println("Teleop time: "+(diff/1000000));
+            if (diff < 5000000L)
+                Thread.sleep(0, (int) (5000000 - diff));
+            loops++;
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+
+        if (elapsedTime.milliseconds() > 1000) {
+            System.out.println("Total loop: " + loops);
+            elapsedTime.reset();
+            loops = 0;
         }
     }
 
