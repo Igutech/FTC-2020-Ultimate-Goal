@@ -88,5 +88,12 @@ public class PIDFController implements BasicController {
         this.kF = kF;
     }
 
+    public void setPIDFValues(double kp, double ki, double kd, double kf){
+        kP = kp;
+        kI = ki;
+        kD = kd;
+        kF = kf;
+    }
+
 
 }
