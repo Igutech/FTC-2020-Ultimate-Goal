@@ -2,15 +2,15 @@ package org.igutech.utils.events;
 
 public class SingleTimerEvent {
     private Callback callback;
-    private int time;
+    private long time;
     private boolean hasFired = false;
 
     public SingleTimerEvent(int time, Callback m) {
         callback = m;
-        this.time = time;
+        this.time = time+System.currentTimeMillis();
     }
 
-    public int getTime() {
+    public long getTime() {
         return time;
     }
 
