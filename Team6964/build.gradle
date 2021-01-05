@@ -20,7 +20,7 @@ dependencies {
     implementation('com.acmerobotics.dashboard:dashboard:0.3.10') {
         exclude group: 'org.firstinspires.ftc'
     }
-    implementation 'com.acmerobotics.roadrunner:core:0.5.2'
+    implementation 'com.acmerobotics.roadrunner:core:0.5.3'
     implementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     implementation 'com.arcrobotics.ftclib:vision:1.1.0'
 

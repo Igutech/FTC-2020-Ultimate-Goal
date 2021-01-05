@@ -1,6 +1,5 @@
 package org.igutech.auto.util;
 
-
 import androidx.annotation.Nullable;
 
 import com.acmerobotics.roadrunner.kinematics.Kinematics;

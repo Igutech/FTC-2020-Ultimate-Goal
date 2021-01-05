@@ -32,12 +32,8 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     public static double WHEEL_RADIUS = 1.14173; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    //14.6385 last tuned value
     public static double LATERAL_DISTANCE = 14.5948; // in; distance between the left and right wheels
     public static double FORWARD_OFFSET = -6.94; // in; offset of the lateral wheel
-    public static double xMultipler = 1.01123596;
-    public static double yMultipler = 1.02272727;
-
 
     private Encoder leftEncoder, rightEncoder, frontEncoder;
 
@@ -77,9 +73,9 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         //  compensation method
 
         return Arrays.asList(
-                encoderTicksToInches(leftEncoder.getCorrectedVelocity()),
-                encoderTicksToInches(rightEncoder.getCorrectedVelocity()),
-                encoderTicksToInches(frontEncoder.getCorrectedVelocity())
+                encoderTicksToInches(leftEncoder.getRawVelocity()),
+                encoderTicksToInches(rightEncoder.getRawVelocity()),
+                encoderTicksToInches(frontEncoder.getRawVelocity())
         );
     }
 }
