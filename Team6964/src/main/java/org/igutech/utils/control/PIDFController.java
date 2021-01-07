@@ -8,7 +8,7 @@ import org.apache.commons.math3.util.FastMath;
 
 public class PIDFController implements BasicController {
 
-    private long currentTimeMillis;
+    private long currentTime;
     private double kP, kI, kD, kF;
     private double iTerm = 0;
     private double prevError = 0;
@@ -19,17 +19,19 @@ public class PIDFController implements BasicController {
         this.kI = kI;
         this.kD = kD;
         this.kF = kF;
+        init();
     }
 
     @Override
     public void init() {
-        currentTimeMillis = System.currentTimeMillis();
+        currentTime = System.currentTimeMillis();
+        iTerm = 0;
     }
 
     @Override
     public double update(double pv) {
         if (FastMath.abs(error(pv)) <= 1) return 0;
-        double timeOffset = System.currentTimeMillis() - currentTimeMillis;
+        double timeOffset = System.currentTimeMillis() - currentTime;
         if (timeOffset < 1)
             timeOffset = 1;
         timeOffset = Math.max(timeOffset, 1);
@@ -40,7 +42,7 @@ public class PIDFController implements BasicController {
         double i = kI * iTerm;
         double d = kD * ((error(pv) - prevError) / timeOffset);
         double f = kF * sp;
-        currentTimeMillis = System.currentTimeMillis();
+        currentTime = System.currentTimeMillis();
         prevError = error(pv);
         return p + i + d + f;
     }
@@ -48,7 +50,7 @@ public class PIDFController implements BasicController {
     public void reset(double pv) {
         prevError = error(pv);
         iTerm = 0;
-        currentTimeMillis = System.currentTimeMillis();
+        currentTime = System.currentTimeMillis();
     }
 
     @Override
@@ -89,10 +91,10 @@ public class PIDFController implements BasicController {
     }
 
     public void setPIDFValues(double kp, double ki, double kd, double kf){
-        kP = kp;
-        kI = ki;
-        kD = kd;
-        kF = kf;
+        this.kP = kp;
+        this.kI = ki;
+        this.kD = kd;
+        this.kF = kf;
     }
 
 
