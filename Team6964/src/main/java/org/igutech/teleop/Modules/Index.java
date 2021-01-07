@@ -77,7 +77,7 @@ public class Index extends Module {
         dpadUp.init();
         dpadDown.init();
 
-        Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+       // Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
 
 
 
