@@ -49,6 +49,10 @@ public class ButtonToggle {
         return toggle;
     }
 
+    public void setState(boolean state) {
+        toggle = state;
+    }
+
     public boolean isDown() {
         return currentButtonPosition;
     }

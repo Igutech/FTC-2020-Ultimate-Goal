@@ -84,13 +84,14 @@ public class Shooter extends Module {
             Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(-manualPower);
             Teleop.getInstance().getHardware().getMotors().get("backshooter").setPower(-manualPower);
         } else if (veloToggle.getState()) {
+            if (powershotToggle.getState()) {
+                powershotToggle.setState(false);
+            }
             if (!wasPidRunning) {
                 frontShooterController.init();
                 backShooterController.init();
             }
-            frontShooterController.setPIDFValues(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
             frontShooterController.updateSetpoint(frontShooterTargetVelo);
-            backShooterController.setPIDFValues(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
             backShooterController.updateSetpoint(backShooterTargetVelo);
             double frontShooterPower = frontShooterController.update(bulkRead.getFrontShooterVelo());
             double backShooterPower = backShooterController.update(bulkRead.getBackShooterVelo());
@@ -102,13 +103,12 @@ public class Shooter extends Module {
             dashboardTelemetry.addData("backShooterPower", backShooterPower);
             Logger.getLogger("SHOOTER").info("IN SHOOTER");
         } else if (powershotToggle.getState()) {
+
             if (!wasPidRunning) {
                 frontShooterController.init();
                 backShooterController.init();
             }
-            frontShooterController.setPIDFValues(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
             frontShooterController.updateSetpoint(frontShooterPowershotVelo);
-            backShooterController.setPIDFValues(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
             backShooterController.updateSetpoint(backShooterPowershotVelo);
             double frontShooterPower = frontShooterController.update(bulkRead.getFrontShooterVelo());
             double backShooterPower = backShooterController.update(bulkRead.getBackShooterVelo());
