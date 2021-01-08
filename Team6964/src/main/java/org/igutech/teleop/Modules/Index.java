@@ -58,15 +58,15 @@ public class Index extends Module {
             Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
         });
 
-        dpadDown = new ButtonToggle(1,"dpad_down",()->{
+        dpadDown = new ButtonToggle(1, "dpad_down", () -> {
             currentShooterServoLevel--;
-            if (currentShooterServoLevel <0) {
+            if (currentShooterServoLevel < 0) {
                 currentShooterServoLevel = 0;
             }
             Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-        },()->{
+        }, () -> {
             currentShooterServoLevel--;
-            if (currentShooterServoLevel <0) {
+            if (currentShooterServoLevel < 0) {
                 currentShooterServoLevel = 0;
             }
             Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
@@ -77,8 +77,7 @@ public class Index extends Module {
         dpadUp.init();
         dpadDown.init();
 
-       // Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-
+        Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
 
 
     }
@@ -91,17 +90,16 @@ public class Index extends Module {
         dpadDown.loop();
     }
 
-    public int getCurrentShooterServoLevel(){
-        return currentShooterServoLevel;
-    }
     private void handleLift() {
         currentShooterServoLevel++;
         if (currentShooterServoLevel > 3) {
             currentShooterServoLevel = 0;
         }
         Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-
-        if (currentShooterServoLevel == 1 || currentShooterServoLevel == 0) {
+        if (currentShooterServoLevel == 0) {
+            timerService.registerSingleTimerEvent(600, () -> {
+            });
+        } else if (currentShooterServoLevel == 1) {
             timerService.registerSingleTimerEvent(600, () -> {
                 Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.32);
                 timerService.registerSingleTimerEvent(150, () -> {
@@ -116,5 +114,14 @@ public class Index extends Module {
                 });
             });
         }
+    }
+
+
+    public int getCurrentShooterServoLevel() {
+        return currentShooterServoLevel;
+    }
+
+    public void setCurrentShooterServoLevel(int level) {
+        currentShooterServoLevel = level;
     }
 }
