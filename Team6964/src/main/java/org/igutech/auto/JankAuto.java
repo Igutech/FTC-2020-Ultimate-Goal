@@ -40,7 +40,7 @@ public class JankAuto extends LinearOpMode {
         autoUtilManager.getHardware().getMotors().get("frontright").setPower(-0.4);
         autoUtilManager.getHardware().getMotors().get("backleft").setPower(0.4);
         autoUtilManager.getHardware().getMotors().get("backright").setPower(-0.4);
-        sleep(2100);
+        sleep(2000);
         autoUtilManager.getHardware().getMotors().get("frontleft").setPower(0.0);
         autoUtilManager.getHardware().getMotors().get("frontright").setPower(0.0);
         autoUtilManager.getHardware().getMotors().get("backleft").setPower(0.0);
