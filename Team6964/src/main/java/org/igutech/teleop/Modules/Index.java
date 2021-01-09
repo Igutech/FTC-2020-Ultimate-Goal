@@ -1,9 +1,12 @@
 package org.igutech.teleop.Modules;
 
+import org.igutech.auto.util.LoggingUtil;
 import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 public class Index extends Module {
@@ -15,6 +18,7 @@ public class Index extends Module {
     private ButtonToggle dpadUp;
     private ButtonToggle dpadDown;
 
+    private PrintWriter printWriter;
     public static int currentShooterServoLevel = 0;
 
     public Index() {
@@ -23,6 +27,12 @@ public class Index extends Module {
 
     @Override
     public void init() {
+        try {
+            printWriter = new PrintWriter(LoggingUtil.getLogFile("shooterInfo.csv"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        printWriter.println("time,frontShooterTarget,backShooterTarget,frontShooterVelo,backShooterVelo ");
         Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.1);
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
         timerService = (TimerService) Teleop.getInstance().getService("TimerService");
@@ -77,7 +87,7 @@ public class Index extends Module {
         dpadUp.init();
         dpadDown.init();
 
-        Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+        Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(0.78);
 
 
     }
