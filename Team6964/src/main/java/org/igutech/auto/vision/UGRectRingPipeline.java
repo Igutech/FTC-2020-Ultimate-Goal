@@ -1,89 +1,105 @@
 package org.igutech.auto.vision;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
+import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 @Config
 public class UGRectRingPipeline extends OpenCvPipeline {
-
     private Mat matYCrCb = new Mat();
-    private Mat matCbBottom = new Mat();
-    private Mat matCbTop = new Mat();
-    private Mat topBlock = new Mat();
-    private Mat bottomBlock = new Mat();
+    private Mat matCb_left = new Mat();
+    private Mat matCb_Right = new Mat();
+    private Mat left_block = new Mat();
+    private Mat right_block = new Mat();
 
-    private double topAverage;
-    private double bottomAverage;
-    private int threshold = 15;
-    public static double topRectWidthPercentage = 0.25;
-    public static double topRectHeightPercentage = 0.25;
-    public static double bottomRectWidthPercentage = 0.25;
-    public static double bottomRectHeightPercentage = 0.25;
-    public static int rectangleWidth = 10;
-    public static int rectangleHeight = 10;
+    public double left;
+    public double right;
+
+    public int pattern=2;
+
+
+    public static int right_one = 160;
+    public static int right_two = 200;
+    public static int right_three = 190;
+    public static int right_four = 210;
+
+    public static int left_one = 80;
+    public static int left_two = 200;
+    public static int left_three = 110;
+    public static int left_four = 210;
+
+    FtcDashboard dashboard = FtcDashboard.getInstance();
+    Telemetry dashboardTelemetry = dashboard.getTelemetry();
 
     @Override
     public Mat processFrame(Mat input) {
         Imgproc.cvtColor(input, matYCrCb, Imgproc.COLOR_RGB2YCrCb);
+        int[] left_rect = {
+                left_one,
+                left_two,
+                left_three ,
+                left_four
+        };
 
-        Rect topRect = new Rect(
-                (int) (matYCrCb.width() * topRectWidthPercentage),
-                (int) (matYCrCb.height() * topRectHeightPercentage),
-                rectangleWidth,
-                rectangleHeight
-        );
+        int[] right_rect = {
+                right_one,
+                right_two,
+                right_three,
+                right_four
+        };
+        Imgproc.rectangle(
+                input,
+                new Point(
+                        left_rect[0],
+                        left_rect[1]),
 
-        Rect bottomRect = new Rect(
-                (int) (matYCrCb.width() * bottomRectWidthPercentage),
-                (int) (matYCrCb.height() * bottomRectHeightPercentage),
-                rectangleWidth,
-                rectangleHeight
-        );
+                new Point(
+                        left_rect[2],
+                        left_rect[3]),
+                new Scalar(0, 255, 0), 1);
+
+        Imgproc.rectangle(
+                input,
+                new Point(
+                        right_rect[0],
+                        right_rect[1]),
+
+                new Point(
+                        right_rect[2],
+                        right_rect[3]),
+                new Scalar(0, 0, 255), 1);
+
+        //TODO check if checking if it is null makes it draw on the same frame or the updated one
+        left_block = matYCrCb.submat(left_rect[1], left_rect[3], left_rect[0], left_rect[2]);
+        right_block = matYCrCb.submat(right_rect[1], right_rect[3], right_rect[0], right_rect[2]);
 
 
-        drawRectOnToMat(input, topRect, new Scalar(255, 0, 0));
-        drawRectOnToMat(input, bottomRect, new Scalar(0, 255, 0));
+        Core.extractChannel(left_block, matCb_left, 2);
+        Core.extractChannel(right_block, matCb_Right, 2);
 
-        topBlock = matYCrCb.submat(topRect);
-        bottomBlock = matYCrCb.submat(bottomRect);
+        Scalar left_mean = Core.mean(matCb_left);
+        Scalar right_mean = Core.mean(matCb_Right);
+        left=left_mean.val[0];
+        right=right_mean.val[0];
 
-        Core.extractChannel(bottomBlock, matCbBottom, 2);
-        Core.extractChannel(topBlock, matCbTop, 2);
 
-        Scalar bottomMean = Core.mean(matCbBottom);
-        Scalar topMean = Core.mean(matCbTop);
 
-        bottomAverage = bottomMean.val[0];
-        topAverage = topMean.val[0];
+        if(Math.abs(left-right)<=15){
+            pattern=3;
+        }else if(left<right){
+            pattern=1;
+        }else if(right<left){
+            pattern=2;
+        }
 
         return input;
+
     }
-
-    private void drawRectOnToMat(Mat mat, Rect rect, Scalar color) {
-        Imgproc.rectangle(mat, rect, color, 1);
-    }
-
-    public double getTopAverage() {
-        return topAverage;
-    }
-
-    public double getBottomAverage() {
-        return bottomAverage;
-    }
-
-    public void setThreshold(int threshold) {
-        this.threshold = threshold;
-    }
-
-    public int getThreshold() {
-        return threshold;
-    }
-
-
 }

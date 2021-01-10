@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -18,7 +19,7 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
  */
 @TeleOp
 @Config
-public class PipelineTest extends LinearOpMode
+public class UGRingContourDetection extends LinearOpMode
 {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
@@ -30,8 +31,8 @@ public class PipelineTest extends LinearOpMode
 
     private static final boolean DEBUG = true; // if debug is wanted, change to true
 
-    private static final boolean USING_WEBCAM = false; // change to true if using webcam
-    private static final String WEBCAM_NAME = ""; // insert webcam name from configuration if using webcam
+    private static final boolean USING_WEBCAM = true; // change to true if using webcam
+    private static final String WEBCAM_NAME = "Webcam 1"; // insert webcam name from configuration if using webcam
 
     private UGContourRingPipeline pipeline;
     private OpenCvCamera camera;
@@ -47,10 +48,8 @@ public class PipelineTest extends LinearOpMode
                         hardwareMap.appContext.getPackageName()
                 );
         {
-            camera = OpenCvCameraFactory
-                    .getInstance()
-                    .createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-
+           // camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+            camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
             camera.setPipeline(pipeline = new UGContourRingPipeline(telemetry, true));
 
