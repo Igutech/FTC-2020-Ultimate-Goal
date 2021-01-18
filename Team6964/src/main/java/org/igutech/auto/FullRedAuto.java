@@ -18,6 +18,7 @@ public class FullRedAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         Pose2d startPose = new Pose2d(-60, -48, Math.toRadians(0));
+        drive.setPoseEstimate(startPose);
         ArrayList<Trajectory> trajectories = RedA.createTrajectory(drive, startPose);
 
         waitForStart();
