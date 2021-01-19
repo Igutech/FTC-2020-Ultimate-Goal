@@ -3,39 +3,43 @@ package org.igutech.auto.paths;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 
+import org.igutech.auto.FullRedAuto;
+import org.igutech.auto.State;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RedA {
-    public static ArrayList<Trajectory> createTrajectory(SampleMecanumDrive drive, Pose2d start) {
-        ArrayList<Trajectory> trajectories = new ArrayList<>();
-        Trajectory dropGoal = drive.trajectoryBuilder(start)
-                .splineToConstantHeading(new Vector2d(0, -60), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(0, -35), Math.toRadians(0.0))
-                .build();
-        Trajectory getRings = drive.trajectoryBuilder(dropGoal.end())
-                .splineToSplineHeading(new Pose2d(-5, -35, Math.toRadians(180)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(-15, -35, Math.toRadians(180)), Math.toRadians(0))
-                .build();
-        Trajectory shootRing = drive.trajectoryBuilder(getRings.end())
-                .splineToSplineHeading(new Pose2d(0, -35, Math.toRadians(0)), Math.toRadians(180))
+    public static HashMap<String, Trajectory> createTrajectory(SampleMecanumDrive drive, Pose2d start) {
+        HashMap<String, Trajectory> trajectories = new HashMap<>();
+        Trajectory prepareToShoot = drive.trajectoryBuilder(start)
+                .splineToConstantHeading(new Vector2d(-35.0, -35.0), Math.toRadians(0.0))
+                .addDisplacementMarker(()->{
+                    FullRedAuto.setState(State.SHOOTING);
+                })
                 .build();
 
-        Trajectory getSecondGoal = drive.trajectoryBuilder(shootRing.end())
-                .splineToSplineHeading(new Pose2d(-30, -25, Math.toRadians(180)), Math.toRadians(0))
-                .splineToSplineHeading(new Pose2d(-40, -25, Math.toRadians(180)), Math.toRadians(0))
-                .build();
-        Trajectory dropSecondGoal = drive.trajectoryBuilder(getSecondGoal.end())
-                .splineToSplineHeading(new Pose2d(0, -60, Math.toRadians(0)), Math.toRadians(180))
+        Trajectory intakeRingStack = drive.trajectoryBuilder(prepareToShoot.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+                .splineTo(new Vector2d(-25.0, -35.0), Math.toRadians(0.0))
                 .build();
 
-        trajectories.add(dropGoal);
-        trajectories.add(getRings);
-        trajectories.add(shootRing);
-        trajectories.add(getSecondGoal);
-        trajectories.add(dropSecondGoal);
+        Trajectory dropFirstWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
+                .splineTo(new Vector2d(10.0, -45.0),Math.toRadians(0.0))
+                .build();
+        Trajectory shootRingStack = drive.trajectoryBuilder(dropFirstWobbleGoal.end(),true)
+                .splineToConstantHeading(new Vector2d(-5.0, -40.0),Math.toRadians(0.0))
+                .build();
+
+
+        trajectories.put("PrepareToShoot", prepareToShoot);
+        trajectories.put("IntakeRingStack", intakeRingStack);
+        trajectories.put("DropFirstWobbleGoal", dropFirstWobbleGoal);
+        trajectories.put("ShootRingStack", shootRingStack);
         return trajectories;
     }
+
+
 }
