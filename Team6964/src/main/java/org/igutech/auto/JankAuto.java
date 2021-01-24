@@ -31,7 +31,7 @@ public class JankAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         frontShooterController = new PIDFController(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
         backShooterController = new PIDFController(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
-        autoUtilManager = new AutoUtilManager(hardwareMap, "Jank_Auto");
+        autoUtilManager = new AutoUtilManager(hardwareMap);
         autoUtilManager.getHardware().getServos().get("liftServo").setPosition(0.78);
 
         waitForStart();
