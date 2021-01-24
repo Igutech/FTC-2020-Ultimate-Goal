@@ -7,11 +7,15 @@ public class SingleTimerEvent {
 
     public SingleTimerEvent(int time, Callback m) {
         callback = m;
-        this.time = time+System.currentTimeMillis();
+        this.time = time + System.currentTimeMillis();
     }
 
     public long getTime() {
         return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public boolean hasFired() {
