@@ -2,6 +2,7 @@ package org.igutech.auto;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -23,6 +24,7 @@ public class FullRedAuto extends LinearOpMode {
     private int currentShooterServoLevel = 0;
     private HashMap<Integer, Double> liftPositions;
     private TimerService timerService;
+    private final MarkerCallback TRANSITION_STATES = () -> currentState = transition(currentState);
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -44,9 +46,7 @@ public class FullRedAuto extends LinearOpMode {
 
         Trajectory prepareToShoot = drive.trajectoryBuilder(startPose)
                 .splineToConstantHeading(new Vector2d(-35.0, -35.0), Math.toRadians(0.0))
-                .addDisplacementMarker(() -> {
-                    currentState = State.SHOOTING_PRELOAD_RINGS;
-                })
+                .addDisplacementMarker(TRANSITION_STATES)
                 .build();
 
         Trajectory intakeRingStack = drive.trajectoryBuilder(prepareToShoot.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
@@ -56,32 +56,28 @@ public class FullRedAuto extends LinearOpMode {
                 .splineTo(new Vector2d(-25.0, -35.0), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> {
                     hardware.getMotors().get("intake").setPower(0.0);
-                    currentState = State.DROP_FIRST_WOBBLE_GOAL;
+                    currentState = transition(currentState);
                 })
                 .build();
 
         Trajectory dropFirstWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
                 .splineTo(new Vector2d(10.0, -45.0), Math.toRadians(0.0))
-                .addDisplacementMarker(() -> {
-                    currentState = State.MOVE_TO_SHOOT_RING_STACK;
-                })
+                .addDisplacementMarker(TRANSITION_STATES)
                 .build();
         Trajectory moveToShootRingStack = drive.trajectoryBuilder(dropFirstWobbleGoal.end(), true)
                 .splineToConstantHeading(new Vector2d(-5.0, -40.0), Math.toRadians(0.0))
-                .addDisplacementMarker(() -> {
-                    currentState = State.SHOOTING_RING_STACK;
-                })
+                .addDisplacementMarker(TRANSITION_STATES)
                 .build();
         Trajectory grabSecondGoal = drive.trajectoryBuilder(moveToShootRingStack.end())
                 .splineToConstantHeading(new Vector2d(-55.0, -40.0), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> {
-                    currentState = State.DROP_SECOND_GOAL;
+                    currentState = transition(currentState);
                 })
                 .build();
         Trajectory dropSecondWobbleGoal = drive.trajectoryBuilder(grabSecondGoal.end())
                 .splineTo(new Vector2d(10.0, -45.0), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> {
-                    currentState = State.OFF;
+                    currentState = transition(currentState);
                 })
                 .build();
 
@@ -120,12 +116,13 @@ public class FullRedAuto extends LinearOpMode {
                     drive.followTrajectoryAsync(dropSecondWobbleGoal);
                     break;
                 default:
-
-
             }
             shooter.loop();
             timerService.loop();
             drive.update();
+
+            telemetry.addData("State", currentState);
+            telemetry.update();
 
         }
 
@@ -147,8 +144,8 @@ public class FullRedAuto extends LinearOpMode {
                     }
                     if (isShooterEnabled) {
                         handleLift();
-                    }else{
-                        transition();
+                    } else {
+                        currentState = transition(currentState);
                     }
                 });
             });
@@ -156,12 +153,10 @@ public class FullRedAuto extends LinearOpMode {
     }
 
 
-    public void transition(){
-        if(currentState==State.SHOOTING_PRELOAD_RINGS){
-            currentState=State.INTAKE_RING_STACK;
-        }else if(currentState==State.SHOOTING_RING_STACK){
-            currentState = State.MOVE_TO_GRAB_SECOND_GOAL;
-        }
+    public State transition(State state) {
+        System.out.println("Transitioning to state " + state.getNextState() + " from " + currentState);
+        return state.getNextState();
+
     }
 
 
