@@ -13,13 +13,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class RedA {
-    public static HashMap<String, Trajectory> createTrajectory(SampleMecanumDrive drive, Pose2d start) {
+    public static HashMap<String, Trajectory> createTrajectory(SampleMecanumDrive drive, Pose2d start, FullRedAuto fullRedAuto) {
         HashMap<String, Trajectory> trajectories = new HashMap<>();
         Trajectory prepareToShoot = drive.trajectoryBuilder(start)
                 .splineToConstantHeading(new Vector2d(-35.0, -35.0), Math.toRadians(0.0))
-                .addDisplacementMarker(()->{
-                    FullRedAuto.setState(State.SHOOTING);
-                })
                 .build();
 
         Trajectory intakeRingStack = drive.trajectoryBuilder(prepareToShoot.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
@@ -27,10 +24,16 @@ public class RedA {
                 .build();
 
         Trajectory dropFirstWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
-                .splineTo(new Vector2d(10.0, -45.0),Math.toRadians(0.0))
+                .splineTo(new Vector2d(10.0, -45.0), Math.toRadians(0.0))
                 .build();
-        Trajectory shootRingStack = drive.trajectoryBuilder(dropFirstWobbleGoal.end(),true)
-                .splineToConstantHeading(new Vector2d(-5.0, -40.0),Math.toRadians(0.0))
+        Trajectory shootRingStack = drive.trajectoryBuilder(dropFirstWobbleGoal.end(), true)
+                .splineToConstantHeading(new Vector2d(-5.0, -40.0), Math.toRadians(0.0))
+                .build();
+        Trajectory grabSecondGoal = drive.trajectoryBuilder(shootRingStack.end())
+                .splineToConstantHeading(new Vector2d(-55.0, -40.0), Math.toRadians(0.0))
+                .build();
+        Trajectory dropSecondWobbleGoal = drive.trajectoryBuilder(grabSecondGoal.end())
+                .splineTo(new Vector2d(10.0, -45.0), Math.toRadians(0.0))
                 .build();
 
 
