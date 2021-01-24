@@ -1,6 +1,7 @@
 package org.igutech.teleop.Modules;
 
 import org.igutech.auto.util.LoggingUtil;
+import org.igutech.config.Hardware;
 import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
@@ -17,110 +18,112 @@ public class Index extends Module {
     private ButtonToggle shooterServoToggle;
     private ButtonToggle dpadUp;
     private ButtonToggle dpadDown;
+    private int currentShooterServoLevel = 0;
+    private Hardware hardware;
+    private boolean isTeleop;
 
-    private PrintWriter printWriter;
-    public static int currentShooterServoLevel = 0;
-
-    public Index() {
+    public Index(Hardware hardware, TimerService timerService, boolean isTeleop) {
         super(300, "Index");
+        this.timerService = timerService;
+        this.hardware = hardware;
+        this.isTeleop = isTeleop;
     }
 
     @Override
     public void init() {
-        try {
-            printWriter = new PrintWriter(LoggingUtil.getLogFile("shooterInfo.csv"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        if (isTeleop) {
+            gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
+
+            shootToggle = new ButtonToggle(1, "left_bumper", () -> {
+                handleLift();
+            }, () -> {
+                handleLift();
+            });
+
+            shooterServoToggle = new ButtonToggle(1, "y", () -> {
+                hardware.getServos().get("shooterServo").setPosition(0.32);
+
+            }, () -> {
+                hardware.getServos().get("shooterServo").setPosition(0.1);
+
+            });
+            dpadUp = new ButtonToggle(1, "dpad_up", () -> {
+                currentShooterServoLevel++;
+                if (currentShooterServoLevel > 3) {
+                    currentShooterServoLevel = 0;
+                }
+                hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+            }, () -> {
+                currentShooterServoLevel++;
+                if (currentShooterServoLevel > 3) {
+                    currentShooterServoLevel = 0;
+                }
+                hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+            });
+
+            dpadDown = new ButtonToggle(1, "dpad_down", () -> {
+                currentShooterServoLevel--;
+                if (currentShooterServoLevel < 0) {
+                    currentShooterServoLevel = 0;
+                }
+                hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+            }, () -> {
+                currentShooterServoLevel--;
+                if (currentShooterServoLevel < 0) {
+                    currentShooterServoLevel = 0;
+                }
+                hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+            });
+
+            shootToggle.init();
+            shooterServoToggle.init();
+            dpadUp.init();
+            dpadDown.init();
         }
-        printWriter.println("time,frontShooterTarget,backShooterTarget,frontShooterVelo,backShooterVelo ");
-        Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.1);
-        gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
-        timerService = (TimerService) Teleop.getInstance().getService("TimerService");
+
+
         liftPositions = new HashMap<>();
         liftPositions.put(0, 0.78);
         liftPositions.put(1, 0.65);
         liftPositions.put(2, 0.59);
         liftPositions.put(3, 0.5);
-        shootToggle = new ButtonToggle(1, "left_bumper", () -> {
-            handleLift();
-        }, () -> {
-            handleLift();
-        });
-
-        shooterServoToggle = new ButtonToggle(1, "y", () -> {
-            Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.32);
-
-        }, () -> {
-            Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.1);
-
-        });
-        dpadUp = new ButtonToggle(1, "dpad_up", () -> {
-            currentShooterServoLevel++;
-            if (currentShooterServoLevel > 3) {
-                currentShooterServoLevel = 0;
-            }
-            Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-        }, () -> {
-            currentShooterServoLevel++;
-            if (currentShooterServoLevel > 3) {
-                currentShooterServoLevel = 0;
-            }
-            Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-        });
-
-        dpadDown = new ButtonToggle(1, "dpad_down", () -> {
-            currentShooterServoLevel--;
-            if (currentShooterServoLevel < 0) {
-                currentShooterServoLevel = 0;
-            }
-            Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-        }, () -> {
-            currentShooterServoLevel--;
-            if (currentShooterServoLevel < 0) {
-                currentShooterServoLevel = 0;
-            }
-            Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-        });
-
-        shootToggle.init();
-        shooterServoToggle.init();
-        dpadUp.init();
-        dpadDown.init();
-
-        Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(0.78);
+        hardware.getServos().get("shooterServo").setPosition(0.1);
+        hardware.getServos().get("liftServo").setPosition(0.78);
 
 
     }
 
     @Override
     public void loop() {
-        shootToggle.loop();
-        shooterServoToggle.loop();
-        dpadUp.loop();
-        dpadDown.loop();
+        if (isTeleop) {
+            shootToggle.loop();
+            shooterServoToggle.loop();
+            dpadUp.loop();
+            dpadDown.loop();
+        }
     }
 
-    private void handleLift() {
+    public void handleLift() {
         currentShooterServoLevel++;
         if (currentShooterServoLevel > 3) {
             currentShooterServoLevel = 0;
         }
-        Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+        hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
         if (currentShooterServoLevel == 0) {
-            timerService.registerSingleTimerEvent(600, () -> {
+            timerService.registerUniqueTimerEvent(600, () -> {
             });
         } else if (currentShooterServoLevel == 1) {
-            timerService.registerSingleTimerEvent(600, () -> {
-                Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.32);
-                timerService.registerSingleTimerEvent(150, () -> {
-                    Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.1);
+            timerService.registerUniqueTimerEvent(600, () -> {
+                hardware.getServos().get("shooterServo").setPosition(0.32);
+                timerService.registerUniqueTimerEvent(150, () -> {
+                    hardware.getServos().get("shooterServo").setPosition(0.1);
                 });
             });
         } else {
-            timerService.registerSingleTimerEvent(250, () -> {
-                Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.32);
-                timerService.registerSingleTimerEvent(200, () -> {
-                    Teleop.getInstance().getHardware().getServos().get("shooterServo").setPosition(0.1);
+            timerService.registerUniqueTimerEvent(250, () -> {
+                hardware.getServos().get("shooterServo").setPosition(0.32);
+                timerService.registerUniqueTimerEvent(200, () -> {
+                    hardware.getServos().get("shooterServo").setPosition(0.1);
                 });
             });
         }

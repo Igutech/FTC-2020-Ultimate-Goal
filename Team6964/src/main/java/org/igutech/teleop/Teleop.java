@@ -30,7 +30,7 @@ public class Teleop extends OpMode {
     }
 
     private ArrayList<Module> modules;
-
+    private TimerService timerService;
     private Hardware hardware;
     private ElapsedTime elapsedTime;
     private int loops = 0;
@@ -39,9 +39,9 @@ public class Teleop extends OpMode {
 
         modules.add(new DriveTrain());
         modules.add(new ThreeWheelOdometry());
-        modules.add(new Shooter());
+        modules.add(new Shooter(hardware,true));
         modules.add(new Intake());
-        modules.add(new Index());
+        modules.add(new Index(hardware,timerService,true));
 
 
     }
@@ -49,7 +49,6 @@ public class Teleop extends OpMode {
     private void registerServices() {
         modules.add(new DisconnectWorkaround());
         modules.add(new GamepadService(gamepad1, gamepad2));
-        modules.add(new TimerService());
         modules.add(new BulkRead());
     }
 
@@ -134,6 +133,7 @@ public class Teleop extends OpMode {
         instance = this;
         hardware = new Hardware(hardwareMap);
         modules = new ArrayList<>();
+        timerService = new TimerService();
         registerModules();
         registerServices();
         sortModules();
@@ -155,6 +155,7 @@ public class Teleop extends OpMode {
         for (Module m : modules) {
             if (m.isEnabled()) m.start();
         }
+        timerService.start();
         elapsedTime = new ElapsedTime((ElapsedTime.Resolution.MILLISECONDS));
     }
 
@@ -163,6 +164,7 @@ public class Teleop extends OpMode {
 
         try {
             long nanos = System.nanoTime();
+            timerService.loop();
             for (Module m : modules) {
                 if (m.isEnabled()) m.loop();
             }
