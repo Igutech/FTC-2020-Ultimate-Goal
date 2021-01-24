@@ -83,6 +83,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     private BNO055IMU imu;
 
     private Pose2d lastPoseOnTurn;
+    private HardwareMap hardwareMap;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
@@ -106,7 +107,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
         // TODO: adjust the names of the following hardware devices to match your configuration
@@ -155,6 +156,9 @@ public class SampleMecanumDrive extends MecanumDrive {
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        this.hardwareMap = hardwareMap;
+
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
@@ -169,7 +173,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         return new TrajectoryBuilder(startPose, startHeading, constraints);
     }
 
-    public TrajectoryBuilder trajectoryBuilder(Pose2d startPose,DriveConstraints driveConstraints ) {
+    public TrajectoryBuilder trajectoryBuilder(Pose2d startPose, DriveConstraints driveConstraints) {
         return new TrajectoryBuilder(startPose, driveConstraints);
     }
 
@@ -216,17 +220,24 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
         throw new AssertionError();
     }
-    public int getLeft(){
+
+    public int getLeft() {
         return leftFront.getCurrentPosition();
     }
 
-    public int getRight(){
+    public int getRight() {
         return leftRear.getCurrentPosition();
     }
-    public int getStrafe(){
+
+    public int getStrafe() {
         return rightFront.getCurrentPosition();
     }
+
     public void update() {
+
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
         updatePoseEstimate();
 
         Pose2d currentPose = getPoseEstimate();
@@ -246,9 +257,9 @@ public class SampleMecanumDrive extends MecanumDrive {
         packet.put("xError", lastError.getX());
         packet.put("yError", lastError.getY());
         packet.put("headingError", lastError.getHeading());
-        packet.put("left encoder",leftFront.getCurrentPosition());
-        packet.put("right encoder",leftRear.getCurrentPosition());
-        packet.put("strafe encoder",rightFront.getCurrentPosition());
+        packet.put("left encoder", leftFront.getCurrentPosition());
+        packet.put("right encoder", leftRear.getCurrentPosition());
+        packet.put("strafe encoder", rightFront.getCurrentPosition());
         switch (mode) {
             case IDLE:
                 // do nothing
