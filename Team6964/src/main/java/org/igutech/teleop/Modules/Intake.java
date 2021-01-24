@@ -4,8 +4,6 @@ import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 
-import static org.igutech.teleop.Modules.Index.currentShooterServoLevel;
-
 public class Intake extends Module {
     GamepadService gamepadService;
     ButtonToggle xToggle;
