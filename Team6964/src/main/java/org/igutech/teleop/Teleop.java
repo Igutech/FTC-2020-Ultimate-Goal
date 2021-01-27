@@ -15,6 +15,7 @@ import org.igutech.teleop.Modules.Intake;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.ThreeWheelOdometry;
 import org.igutech.teleop.Modules.TimerService;
+import org.igutech.teleop.Modules.WobbleGoalGrabber;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,6 +43,7 @@ public class Teleop extends OpMode {
         modules.add(new Shooter(hardware,true));
         modules.add(new Intake());
         modules.add(new Index(hardware,timerService,true));
+        modules.add(new WobbleGoalGrabber());
 
 
     }

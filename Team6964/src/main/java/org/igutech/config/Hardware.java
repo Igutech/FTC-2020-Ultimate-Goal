@@ -41,6 +41,8 @@ public class Hardware {
         servos.put("liftServo",hardwareMap.servo.get("liftServo"));
         servos.put("shooterServo",hardwareMap.servo.get("shooterServo"));
         servos.put("releaseLiftServo",hardwareMap.servo.get("releaseLiftServo"));
+        servos.put("wobbleGoalLift",hardwareMap.servo.get("wobbleGoalLift"));
+        servos.put("wobbleGoalServo",hardwareMap.servo.get("wobbleGoalServo"));
 
         motors.get("frontright").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motors.get("frontleft").setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
