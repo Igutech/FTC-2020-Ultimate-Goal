@@ -54,10 +54,11 @@ public class Shooter extends Module {
 
     @Override
     public void init() {
+        frontShooterController = new PIDFController(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
+        backShooterController = new PIDFController(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
         if (inTeleop) {
             gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
-            frontShooterController = new PIDFController(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
-            backShooterController = new PIDFController(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
+
             highGoalToggle = new ButtonToggle(1, "right_bumper", () -> {
                 frontShooterController.init();
                 backShooterController.init();
@@ -112,8 +113,10 @@ public class Shooter extends Module {
             hardware.getMotors().get("frontshooter").setPower(-manualPower);
             hardware.getMotors().get("backshooter").setPower(-manualPower);
         } else if (shooterState == ShooterState.HIGH_GOAL) {
-            if (powershotToggle.getState()) {
-                powershotToggle.setState(false);
+            if(inTeleop){
+                if (powershotToggle.getState()) {
+                    powershotToggle.setState(false);
+                }
             }
             if (!wasPidRunning) {
                 frontShooterController.init();
@@ -158,8 +161,14 @@ public class Shooter extends Module {
         dashboardTelemetry.addData("Back P ", backShooterController.getkP());
         dashboardTelemetry.update();
 
-        if (highGoalToggle.getState() || powershotToggle.getState()) {
-            wasPidRunning = true;
+        if(inTeleop){
+            if (highGoalToggle.getState() || powershotToggle.getState()) {
+                wasPidRunning = true;
+            }
+        }else{
+            if(shooterState==ShooterState.HIGH_GOAL){
+                wasPidRunning=true;
+            }
         }
 
     }
