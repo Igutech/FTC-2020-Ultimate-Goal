@@ -80,7 +80,7 @@ public class FullRedAuto extends LinearOpMode {
                     currentState = transition(currentState);
                 })
                 .build();
-
+        drive.followTrajectoryAsync(prepareToShoot);
         telemetry.addData("Status: ", "Ready");
         telemetry.update();
         waitForStart();
@@ -90,7 +90,7 @@ public class FullRedAuto extends LinearOpMode {
         while (!isStopRequested() && opModeIsActive()) {
             switch (currentState) {
                 case PREPARE_TO_SHOOT:
-                    drive.followTrajectoryAsync(prepareToShoot);
+                    //drive.followTrajectoryAsync(prepareToShoot);
                     break;
                 case SHOOTING_PRELOAD_RINGS:
                     isShooterEnabled = true;
@@ -120,7 +120,7 @@ public class FullRedAuto extends LinearOpMode {
             shooter.loop();
             timerService.loop();
             drive.update();
-
+            telemetry.addData("Pose", drive.getPoseEstimate());
             telemetry.addData("State", currentState);
             telemetry.update();
 
@@ -128,28 +128,56 @@ public class FullRedAuto extends LinearOpMode {
 
     }
 
+    //    public void handleLift() {
+//        System.out.println("Running Indexer");
+//        if (currentShooterServoLevel > 3) {
+//            currentShooterServoLevel = 0;
+//        }
+//        timerService.registerSingleTimerEvent(600, () -> {
+//            System.out.println("Event stuff");
+//            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+//            timerService.registerSingleTimerEvent(600, () -> {
+//                hardware.getServos().get("shooterServo").setPosition(1.0);
+//                timerService.registerSingleTimerEvent(150, () -> {
+//                    hardware.getServos().get("shooterServo").setPosition(0.0);
+//                    currentShooterServoLevel++;
+//                    if (currentShooterServoLevel > 3) {
+//                        isShooterEnabled = false;
+//                    }
+//                    if (isShooterEnabled) {
+//                        handleLift();
+//                    } else {
+//                        currentState = transition(currentState);
+//                    }
+//                });
+//            });
+//        });
+//    }
     public void handleLift() {
+        currentShooterServoLevel++;
         if (currentShooterServoLevel > 3) {
             currentShooterServoLevel = 0;
         }
-        timerService.registerSingleTimerEvent(600, () -> {
-            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-            timerService.registerSingleTimerEvent(600, () -> {
-                hardware.getServos().get("shooterServo").setPosition(1.0);
-                timerService.registerSingleTimerEvent(150, () -> {
-                    hardware.getServos().get("shooterServo").setPosition(0.0);
-                    currentShooterServoLevel++;
-                    if (currentShooterServoLevel > 3) {
-                        isShooterEnabled = false;
-                    }
-                    if (isShooterEnabled) {
-                        handleLift();
-                    } else {
-                        currentState = transition(currentState);
-                    }
+        hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+        if (currentShooterServoLevel == 0) {
+            timerService.registerUniqueTimerEvent(600, () -> {
+            });
+        } else if (currentShooterServoLevel == 1) {
+            timerService.registerUniqueTimerEvent(600, () -> {
+                hardware.getServos().get("shooterServo").setPosition(0.32);
+                timerService.registerUniqueTimerEvent(150, () -> {
+                    hardware.getServos().get("shooterServo").setPosition(0.1);
                 });
             });
-        });
+        } else {
+            timerService.registerUniqueTimerEvent(250, () -> {
+                hardware.getServos().get("shooterServo").setPosition(0.32);
+                timerService.registerUniqueTimerEvent(200, () -> {
+                    hardware.getServos().get("shooterServo").setPosition(0.1);
+                    currentState = transition(currentState);
+                });
+            });
+        }
     }
 
 
