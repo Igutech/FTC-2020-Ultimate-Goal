@@ -53,6 +53,7 @@ public class Intake extends Module {
         }
 
         Teleop.getInstance().getHardware().getMotors().get("intake").setPower(power);
+        Teleop.getInstance().getHardware().getMotors().get("frontshooter").setPower(power);
 
         xToggle.loop();
         releaseIntake.loop();
