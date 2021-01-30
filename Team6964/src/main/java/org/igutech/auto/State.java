@@ -20,7 +20,7 @@ public enum State {
         MOVE_TO_SHOOT_RING_STACK.nextState = SHOOTING_RING_STACK;
         SHOOTING_RING_STACK.nextState = MOVE_TO_GRAB_SECOND_GOAL;
         MOVE_TO_GRAB_SECOND_GOAL.nextState = DROP_SECOND_GOAL;
-        MOVE_TO_GRAB_SECOND_GOAL.nextState = OFF;
+        DROP_SECOND_GOAL.nextState = OFF;
     }
 
     private State nextState;
