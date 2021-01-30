@@ -30,7 +30,8 @@ public class Shooter extends Module {
     public static double backShooterkF = 0.0;
 
     public static double frontShooterTargetVelo = -1400;
-    public static double backShooterTargetVelo = -1080;
+    //public static double backShooterTargetVelo = -1080;
+    public static double backShooterTargetVelo = -1030;
     public static double frontShooterPowershotVelo = -1200;
     public static double backShooterPowershotVelo = -1100;
     private PIDFController frontShooterController;
