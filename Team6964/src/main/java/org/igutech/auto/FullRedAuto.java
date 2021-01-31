@@ -28,11 +28,11 @@ public class FullRedAuto extends LinearOpMode {
     private SampleMecanumDrive drive;
     private Shooter shooter;
     private Trajectory prepareToShoot;
+    private Trajectory dropOffFirstWobbleGoal;
+    private Trajectory goToRingStack;
     private Trajectory intakeRingStack;
-    private Trajectory dropFirstWobbleGoal;
+    private Trajectory goToSecondWobbleGoal;
     private Trajectory moveToShootRingStack;
-    private Trajectory grabSecondGoal;
-    private Trajectory dropSecondWobbleGoal;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -52,35 +52,35 @@ public class FullRedAuto extends LinearOpMode {
 
         shooter.init();
 
-        prepareToShoot = drive.trajectoryBuilder(startPose,new DriveConstraints(15.0, 15.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                .lineToConstantHeading(new Vector2d(-40.0, -39.0))
+        prepareToShoot = drive.trajectoryBuilder(startPose)
+                .splineToConstantHeading(new Vector2d(-15.0, -20.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(0.0, -35.0), Math.toRadians(0.0))
                 .addDisplacementMarker(TRANSITION_STATES)
                 .build();
 
-        intakeRingStack = drive.trajectoryBuilder(prepareToShoot.end(), new DriveConstraints(15.0, 15.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                .splineTo(new Vector2d(-25.0, -39.0), Math.toRadians(0.0))
+        dropOffFirstWobbleGoal = drive.trajectoryBuilder(prepareToShoot.end())
+                .splineToConstantHeading(new Vector2d(10.0, -35.0), Math.toRadians(0.0))
                 .addDisplacementMarker(TRANSITION_STATES)
                 .build();
 
-        dropFirstWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end(), new DriveConstraints(15.0, 15.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                .splineTo(new Vector2d(10.0, -45.0), Math.toRadians(0.0))
-                .addDisplacementMarker(() -> {
-                    hardware.getMotors().get("intake").setPower(0.0);
-                    transition(currentState);
-                })
-                .build();
-        moveToShootRingStack = drive.trajectoryBuilder(dropFirstWobbleGoal.end(), true)
-                .splineToConstantHeading(new Vector2d(-5.0, -40.0), Math.toRadians(0.0))
-                .addDisplacementMarker(TRANSITION_STATES)
-                .build();
-        grabSecondGoal = drive.trajectoryBuilder(moveToShootRingStack.end())
-                .splineToConstantHeading(new Vector2d(-40.0, -40.0), Math.toRadians(0.0))
+        goToRingStack = drive.trajectoryBuilder(dropOffFirstWobbleGoal.end())
+                .splineToLinearHeading(new Pose2d(-5.0, -35.0, Math.toRadians(180.0)), Math.toRadians(180.0))
                 .addDisplacementMarker(() -> {
                     transition(currentState);
                 })
                 .build();
-        dropSecondWobbleGoal = drive.trajectoryBuilder(grabSecondGoal.end())
-                .splineTo(new Vector2d(10.0, -45.0), Math.toRadians(0.0))
+        intakeRingStack = drive.trajectoryBuilder(goToRingStack.end(), new DriveConstraints(20, 20, 0, Math.toRadians(180), Math.toRadians(180), 0))
+                .splineToConstantHeading(new Vector2d(-25.0, -35.0), Math.toRadians(180.0))
+                .addDisplacementMarker(TRANSITION_STATES)
+                .build();
+        goToSecondWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
+                .splineToLinearHeading(new Pose2d(-45.0, -35.0, Math.toRadians(0.0)), Math.toRadians(0.0))
+                .addDisplacementMarker(() -> {
+                    transition(currentState);
+                })
+                .build();
+        moveToShootRingStack = drive.trajectoryBuilder(goToSecondWobbleGoal.end())
+                .splineToLinearHeading(new Pose2d(-0.0, -35.0, Math.toRadians(0.0)), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> {
                     transition(currentState);
                 })
@@ -99,7 +99,6 @@ public class FullRedAuto extends LinearOpMode {
             telemetry.addData("Pose", drive.getPoseEstimate());
             telemetry.addData("State", currentState);
             telemetry.update();
-
         }
 
     }
@@ -111,7 +110,6 @@ public class FullRedAuto extends LinearOpMode {
             currentShooterServoLevel = 0;
         }
         timerService.registerUniqueTimerEvent(600, () -> {
-            System.out.println("Event stuff");
             hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
             timerService.registerUniqueTimerEvent(600, () -> {
                 hardware.getServos().get("shooterServo").setPosition(1.0);
@@ -146,25 +144,27 @@ public class FullRedAuto extends LinearOpMode {
                 isShooterEnabled = true;
                 handleLift();
                 break;
+            case DROP_FIRST_WOBBLE_GOAL:
+                drive.followTrajectoryAsync(dropOffFirstWobbleGoal);
+                break;
+            case MOVE_TO_TO_RING_STACK:
+                drive.followTrajectoryAsync(goToRingStack);
+                break;
             case INTAKE_RING_STACK:
-                hardware.getMotors().get("intake").setPower(-1.0);
                 drive.followTrajectoryAsync(intakeRingStack);
                 break;
-            case DROP_FIRST_WOBBLE_GOAL:
-                drive.followTrajectoryAsync(dropFirstWobbleGoal);
+            case MOVE_TO_GRAB_SECOND_GOAL:
+                drive.followTrajectoryAsync(goToSecondWobbleGoal);
+                break;
+            case GRAB_SECOND_WOBBLE_GOAL:
+                transition(currentState);
                 break;
             case MOVE_TO_SHOOT_RING_STACK:
                 drive.followTrajectoryAsync(moveToShootRingStack);
                 break;
-            case SHOOTING_RING_STACK:
+            case SHOOT_RING_STACK:
                 isShooterEnabled = true;
                 handleLift();
-                break;
-            case MOVE_TO_GRAB_SECOND_GOAL:
-                drive.followTrajectoryAsync(grabSecondGoal);
-                break;
-            case DROP_SECOND_GOAL:
-                drive.followTrajectoryAsync(dropSecondWobbleGoal);
                 break;
             default:
         }
