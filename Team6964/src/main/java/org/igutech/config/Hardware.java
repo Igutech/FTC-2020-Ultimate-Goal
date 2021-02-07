@@ -35,6 +35,7 @@ public class Hardware {
         motors.put("frontshooter", hardwareMap.dcMotor.get("frontshooter"));
         motors.put("backshooter", hardwareMap.dcMotor.get("backshooter"));
         motors.put("intake", hardwareMap.dcMotor.get("intake"));
+        motors.put("intake2", hardwareMap.dcMotor.get("intake2"));
 
         //CRservos.put("intakeServo",hardwareMap.crservo.get("intakeServo"));
 
