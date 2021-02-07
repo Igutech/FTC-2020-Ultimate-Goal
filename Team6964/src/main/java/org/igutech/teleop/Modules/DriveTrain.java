@@ -1,6 +1,7 @@
 package org.igutech.teleop.Modules;
 
 import org.apache.commons.math3.util.FastMath;
+import org.igutech.auto.util.LoggingUtil;
 import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.FTCMath;
@@ -30,14 +31,11 @@ public class DriveTrain extends Module {
     @Override
     public void loop() {
 
-        double vD = FastMath.hypot(gamepadService.getAnalog(1, "right_stick_x"),
-                -gamepadService.getAnalog(1, "right_stick_y"));
+        double vD = FastMath.hypot(gamepadService.getAnalog(1, "right_stick_x"),-gamepadService.getAnalog(1, "right_stick_y"));
         double thetaD = Math.atan2(-gamepadService.getAnalog(1, "right_stick_x"),
                 gamepadService.getAnalog(1, "right_stick_y")) + FastMath.PI / 4;
 
         double vTheta = -gamepadService.getAnalog(1, "left_stick_x");
-
-
         double slowMo = gamepadService.getAnalog(1, "right_trigger");
         double vdMult = FTCMath.lerp(1, 0.4, FastMath.abs(slowMo));
         double vThetaMult = FTCMath.lerp(.8, 0.15, FastMath.abs(slowMo));
@@ -48,10 +46,15 @@ public class DriveTrain extends Module {
 //        Teleop.getInstance().telemetry.addData("vdMult", vdMult);
 //        Teleop.getInstance().telemetry.addData("vThetaMult", vThetaMult);
 
-        double frontLeft = vD * FastMath.sin(-thetaD) - vTheta;
-        double frontRight = vD * FastMath.cos(-thetaD) - vTheta;
-        double backLeft = vD * FastMath.cos(-thetaD) + vTheta;
-        double backRight = vD * FastMath.sin(-thetaD) + vTheta;
+        double sin = FastMath.sin(-thetaD);
+        double cos = FastMath.cos(-thetaD);
+        double factor = Math.max(Math.abs(sin),Math.abs(cos));
+        sin/=factor;
+        cos/=factor;
+        double frontLeft = vD * sin - vTheta;
+        double frontRight = vD * cos - vTheta;
+        double backLeft = vD * cos + vTheta;
+        double backRight = vD * sin + vTheta;
 
 
         List<Double> powers = Arrays.asList(frontLeft, frontRight, backLeft, backRight);
@@ -74,6 +77,8 @@ public class DriveTrain extends Module {
         Teleop.getInstance().telemetry.addData("FrontRight", powers.get(1));
         Teleop.getInstance().telemetry.addData("BackLeft", -powers.get(2));
         Teleop.getInstance().telemetry.addData("BackRight", -powers.get(3));
+
+
 
     }
 }
