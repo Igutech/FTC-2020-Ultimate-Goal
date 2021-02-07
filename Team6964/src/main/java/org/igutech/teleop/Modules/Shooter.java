@@ -160,8 +160,9 @@ public class Shooter extends Module {
         dashboardTelemetry.addData("PID Active ", veloControlActive);
         dashboardTelemetry.addData("Front P ", frontShooterController.getkP());
         dashboardTelemetry.addData("Back P ", backShooterController.getkP());
-        dashboardTelemetry.update();
-
+        if(inTeleop){
+            dashboardTelemetry.update();
+        }
         if(inTeleop){
             if (highGoalToggle.getState() || powershotToggle.getState()) {
                 wasPidRunning = true;
