@@ -62,12 +62,12 @@ public class FullRedAuto extends LinearOpMode {
                 .build();
 
         dropOffFirstWobbleGoal = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(20.0, -35.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(20.0, -40.0), Math.toRadians(0.0))
                 .addDisplacementMarker(TRANSITION_STATES)
                 .build();
 
         goToRingStack = drive.trajectoryBuilder(dropOffFirstWobbleGoal.end())
-                .splineToLinearHeading(new Pose2d(-5.0, -35.0, Math.toRadians(180.0)), Math.toRadians(180.0))
+                .splineToLinearHeading(new Pose2d(-5.0, -40.0, Math.toRadians(180.0)), Math.toRadians(180.0))
                 .addDisplacementMarker(() -> {
                     transition(currentState);
                 })
@@ -77,7 +77,7 @@ public class FullRedAuto extends LinearOpMode {
                     hardware.getMotors().get("intake").setPower(-1);
                     hardware.getMotors().get("intake2").setPower(-1);
                 })
-                .splineToConstantHeading(new Vector2d(-25.0, -35.0), Math.toRadians(180.0))
+                .splineToConstantHeading(new Vector2d(-25.0, -40.0), Math.toRadians(180.0))
                 .addDisplacementMarker(TRANSITION_STATES)
                 .build();
         goToSecondWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
@@ -171,7 +171,15 @@ public class FullRedAuto extends LinearOpMode {
                 drive.followTrajectoryAsync(goToSecondWobbleGoal);
                 break;
             case GRAB_SECOND_WOBBLE_GOAL:
-                transition(currentState);
+                timerService.registerUniqueTimerEvent(500,()->{
+                    //hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                    timerService.registerUniqueTimerEvent(500,()->{
+                       // hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                        timerService.registerUniqueTimerEvent(500,()->{
+                            transition(currentState);
+                        });
+                    });
+                });
                 break;
             case MOVE_TO_SHOOT_RING_STACK:
                 drive.followTrajectoryAsync(moveToShootRingStack);
