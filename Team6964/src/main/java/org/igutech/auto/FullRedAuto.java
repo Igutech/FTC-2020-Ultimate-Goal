@@ -12,6 +12,7 @@ import org.igutech.auto.roadrunner.SampleMecanumDrive;
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
+import org.igutech.teleop.Teleop;
 
 import java.util.HashMap;
 
@@ -52,14 +53,16 @@ public class FullRedAuto extends LinearOpMode {
 
         shooter.init();
 
-        prepareToShoot = drive.trajectoryBuilder(startPose)
-                .splineToConstantHeading(new Vector2d(-15.0, -20.0), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(0.0, -35.0), Math.toRadians(0.0))
-                .addDisplacementMarker(TRANSITION_STATES)
+        prepareToShoot = drive.trajectoryBuilder(startPose, new DriveConstraints(20,20,0,Math.toRadians(180),Math.toRadians(180),0))
+                .splineToConstantHeading(new Vector2d(-10.0, -15.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(0.0, -40.0), Math.toRadians(0.0))
+                .addDisplacementMarker(()->{
+                    transition(currentState);
+                })
                 .build();
 
         dropOffFirstWobbleGoal = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(10.0, -35.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(20.0, -35.0), Math.toRadians(0.0))
                 .addDisplacementMarker(TRANSITION_STATES)
                 .build();
 
@@ -70,10 +73,18 @@ public class FullRedAuto extends LinearOpMode {
                 })
                 .build();
         intakeRingStack = drive.trajectoryBuilder(goToRingStack.end(), new DriveConstraints(20, 20, 0, Math.toRadians(180), Math.toRadians(180), 0))
+                .addDisplacementMarker(()->{
+                    hardware.getMotors().get("intake").setPower(-1);
+                    hardware.getMotors().get("intake2").setPower(-1);
+                })
                 .splineToConstantHeading(new Vector2d(-25.0, -35.0), Math.toRadians(180.0))
                 .addDisplacementMarker(TRANSITION_STATES)
                 .build();
         goToSecondWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
+                .addDisplacementMarker(()->{
+                    hardware.getMotors().get("intake").setPower(0);
+                    hardware.getMotors().get("intake2").setPower(0);
+                })
                 .splineToLinearHeading(new Pose2d(-45.0, -35.0, Math.toRadians(0.0)), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> {
                     transition(currentState);
@@ -87,6 +98,7 @@ public class FullRedAuto extends LinearOpMode {
                 .build();
         drive.followTrajectoryAsync(prepareToShoot);
         telemetry.addData("Status: ", "Ready");
+        telemetry.addData("Pose: ", drive.getPoseEstimate());
         telemetry.update();
         waitForStart();
         timerService.start();
@@ -98,6 +110,7 @@ public class FullRedAuto extends LinearOpMode {
             drive.update();
             telemetry.addData("Pose", drive.getPoseEstimate());
             telemetry.addData("State", currentState);
+
             telemetry.update();
         }
 
@@ -145,6 +158,7 @@ public class FullRedAuto extends LinearOpMode {
                 handleLift();
                 break;
             case DROP_FIRST_WOBBLE_GOAL:
+                hardware.getServos().get("releaseLiftServo").setPosition(0.2);
                 drive.followTrajectoryAsync(dropOffFirstWobbleGoal);
                 break;
             case MOVE_TO_TO_RING_STACK:
