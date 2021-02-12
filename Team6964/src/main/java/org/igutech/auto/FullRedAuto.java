@@ -37,6 +37,11 @@ public class FullRedAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        hardware = new Hardware(hardwareMap);
+
+        hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+        hardware.getServos().get("releaseLiftServo").setPosition(0.4);
+
 
         liftPositions = new HashMap<>();
         liftPositions.put(0, 0.78);
@@ -44,30 +49,45 @@ public class FullRedAuto extends LinearOpMode {
         liftPositions.put(2, 0.59);
         liftPositions.put(3, 0.5);
 
-        hardware = new Hardware(hardwareMap);
         shooter = new Shooter(hardware, false);
         timerService = new TimerService();
         drive = new SampleMecanumDrive(hardwareMap);
-        Pose2d startPose = new Pose2d(-60, -35, Math.toRadians(0));
+        Pose2d startPose = new Pose2d(-63, -35, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
         shooter.init();
 
         prepareToShoot = drive.trajectoryBuilder(startPose, new DriveConstraints(20,20,0,Math.toRadians(180),Math.toRadians(180),0))
-                .splineToConstantHeading(new Vector2d(-10.0, -15.0), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(0.0, -40.0), Math.toRadians(0.0))
+                .addDisplacementMarker(()->{
+                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                })
+                .splineToConstantHeading(new Vector2d(-25.0, -10.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-15.0, -10.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-5.0, -40.0), Math.toRadians(0.0))
                 .addDisplacementMarker(()->{
                     transition(currentState);
                 })
                 .build();
 
         dropOffFirstWobbleGoal = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(20.0, -40.0), Math.toRadians(0.0))
-                .addDisplacementMarker(TRANSITION_STATES)
+                .splineToConstantHeading(new Vector2d(15.0, -45.0), Math.toRadians(0.0))
+                .addDisplacementMarker(5,()->{
+                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                })
+                .addDisplacementMarker(()->{
+                    hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                })
+                .splineToConstantHeading(new Vector2d(15.0, -35.0), Math.toRadians(0.0))
+                .addDisplacementMarker(()->{
+                    transition(currentState);
+                })
                 .build();
 
         goToRingStack = drive.trajectoryBuilder(dropOffFirstWobbleGoal.end())
-                .splineToLinearHeading(new Pose2d(-5.0, -40.0, Math.toRadians(180.0)), Math.toRadians(180.0))
+                .addDisplacementMarker(()->{
+                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                })
+                .splineToLinearHeading(new Pose2d(0.0, -40.0, Math.toRadians(180.0)), Math.toRadians(180.0))
                 .addDisplacementMarker(() -> {
                     transition(currentState);
                 })
@@ -85,24 +105,26 @@ public class FullRedAuto extends LinearOpMode {
                     hardware.getMotors().get("intake").setPower(0);
                     hardware.getMotors().get("intake2").setPower(0);
                 })
-                .splineToLinearHeading(new Pose2d(-45.0, -35.0, Math.toRadians(0.0)), Math.toRadians(0.0))
+                .splineToLinearHeading(new Pose2d(-45.0, -40.0, Math.toRadians(0.0)), Math.toRadians(0.0))
+
                 .addDisplacementMarker(() -> {
                     transition(currentState);
                 })
                 .build();
         moveToShootRingStack = drive.trajectoryBuilder(goToSecondWobbleGoal.end())
-                .splineToLinearHeading(new Pose2d(-0.0, -35.0, Math.toRadians(0.0)), Math.toRadians(0.0))
+                .splineToLinearHeading(new Pose2d(-0.0, -40.0, Math.toRadians(0.0)), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> {
                     transition(currentState);
                 })
                 .build();
-        drive.followTrajectoryAsync(prepareToShoot);
         telemetry.addData("Status: ", "Ready");
         telemetry.addData("Pose: ", drive.getPoseEstimate());
         telemetry.update();
         waitForStart();
         timerService.start();
-        if (isStopRequested()) return;
+        drive.followTrajectoryAsync(prepareToShoot);
+
+        //if (isStopRequested()) return;
 
         while (!isStopRequested() && opModeIsActive()) {
             shooter.loop();
@@ -135,10 +157,12 @@ public class FullRedAuto extends LinearOpMode {
                     if (isShooterEnabled) {
                         handleLift();
                     } else {
-                        shooter.setEnableShooter(false);
                         currentShooterServoLevel = 0;
                         hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-                        transition(currentState);
+                        timerService.registerUniqueTimerEvent(750,()->{
+                            shooter.setEnableShooter(false);
+                            transition(currentState);
+                        });
                     }
                 });
             });
@@ -162,7 +186,8 @@ public class FullRedAuto extends LinearOpMode {
                 drive.followTrajectoryAsync(dropOffFirstWobbleGoal);
                 break;
             case MOVE_TO_TO_RING_STACK:
-                drive.followTrajectoryAsync(goToRingStack);
+                    drive.followTrajectoryAsync(goToRingStack);
+
                 break;
             case INTAKE_RING_STACK:
                 drive.followTrajectoryAsync(intakeRingStack);
@@ -172,11 +197,18 @@ public class FullRedAuto extends LinearOpMode {
                 break;
             case GRAB_SECOND_WOBBLE_GOAL:
                 timerService.registerUniqueTimerEvent(500,()->{
-                    //hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
                     timerService.registerUniqueTimerEvent(500,()->{
-                       // hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                       hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
                         timerService.registerUniqueTimerEvent(500,()->{
-                            transition(currentState);
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                            timerService.registerUniqueTimerEvent(500,()->{
+                                hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                                timerService.registerUniqueTimerEvent(1000,()->{
+                                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                                    transition(currentState);
+                                });
+                            });
                         });
                     });
                 });
