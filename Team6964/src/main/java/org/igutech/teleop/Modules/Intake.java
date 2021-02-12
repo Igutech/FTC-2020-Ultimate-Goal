@@ -21,7 +21,7 @@ public class Intake extends Module {
         });
         xToggle.init();
 
-        releaseIntake = new ButtonToggle(1, "dpad_left", () -> {
+        releaseIntake = new ButtonToggle(1, "a", () -> {
             Teleop.getInstance().getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
         }, () -> {
             Teleop.getInstance().getHardware().getServos().get("releaseLiftServo").setPosition(0.4);
