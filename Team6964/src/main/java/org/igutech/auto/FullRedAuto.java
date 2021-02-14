@@ -1,21 +1,18 @@
 package org.igutech.auto;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.igutech.auto.paths.RedA;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
-import org.igutech.teleop.Teleop;
 
 import java.util.HashMap;
-
+import java.util.Map;
 
 @Autonomous
 public class FullRedAuto extends LinearOpMode {
@@ -25,23 +22,14 @@ public class FullRedAuto extends LinearOpMode {
     private int currentShooterServoLevel = 0;
     private HashMap<Integer, Double> liftPositions;
     private TimerService timerService;
-    private final MarkerCallback TRANSITION_STATES = () -> transition(currentState);
     private SampleMecanumDrive drive;
     private Shooter shooter;
-    private Trajectory prepareToShoot;
-    private Trajectory dropOffFirstWobbleGoal;
-    private Trajectory goToRingStack;
-    private Trajectory intakeRingStack;
-    private Trajectory goToSecondWobbleGoal;
-    private Trajectory moveToShootRingStack;
+    private Map<State, Trajectory> trajectories;
 
     @Override
     public void runOpMode() throws InterruptedException {
         hardware = new Hardware(hardwareMap);
-
         hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
-        hardware.getServos().get("releaseLiftServo").setPosition(0.4);
-
 
         liftPositions = new HashMap<>();
         liftPositions.put(0, 0.78);
@@ -56,75 +44,15 @@ public class FullRedAuto extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         shooter.init();
+        trajectories = RedA.createTrajectory(drive, startPose, () -> transition(currentState), hardware);
 
-        prepareToShoot = drive.trajectoryBuilder(startPose, new DriveConstraints(20,20,0,Math.toRadians(180),Math.toRadians(180),0))
-                .addDisplacementMarker(()->{
-                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
-                })
-                .splineToConstantHeading(new Vector2d(-25.0, -10.0), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(-15.0, -10.0), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(-5.0, -40.0), Math.toRadians(0.0))
-                .addDisplacementMarker(()->{
-                    transition(currentState);
-                })
-                .build();
-
-        dropOffFirstWobbleGoal = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(15.0, -45.0), Math.toRadians(0.0))
-                .addDisplacementMarker(5,()->{
-                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                })
-                .addDisplacementMarker(()->{
-                    hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                })
-                .splineToConstantHeading(new Vector2d(15.0, -35.0), Math.toRadians(0.0))
-                .addDisplacementMarker(()->{
-                    transition(currentState);
-                })
-                .build();
-
-        goToRingStack = drive.trajectoryBuilder(dropOffFirstWobbleGoal.end())
-                .addDisplacementMarker(()->{
-                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
-                })
-                .splineToLinearHeading(new Pose2d(0.0, -40.0, Math.toRadians(180.0)), Math.toRadians(180.0))
-                .addDisplacementMarker(() -> {
-                    transition(currentState);
-                })
-                .build();
-        intakeRingStack = drive.trajectoryBuilder(goToRingStack.end(), new DriveConstraints(20, 20, 0, Math.toRadians(180), Math.toRadians(180), 0))
-                .addDisplacementMarker(()->{
-                    hardware.getMotors().get("intake").setPower(-1);
-                    hardware.getMotors().get("intake2").setPower(-1);
-                })
-                .splineToConstantHeading(new Vector2d(-25.0, -40.0), Math.toRadians(180.0))
-                .addDisplacementMarker(TRANSITION_STATES)
-                .build();
-        goToSecondWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
-                .addDisplacementMarker(()->{
-                    hardware.getMotors().get("intake").setPower(0);
-                    hardware.getMotors().get("intake2").setPower(0);
-                })
-                .splineToLinearHeading(new Pose2d(-45.0, -40.0, Math.toRadians(0.0)), Math.toRadians(0.0))
-
-                .addDisplacementMarker(() -> {
-                    transition(currentState);
-                })
-                .build();
-        moveToShootRingStack = drive.trajectoryBuilder(goToSecondWobbleGoal.end())
-                .splineToLinearHeading(new Pose2d(-0.0, -40.0, Math.toRadians(0.0)), Math.toRadians(0.0))
-                .addDisplacementMarker(() -> {
-                    transition(currentState);
-                })
-                .build();
         telemetry.addData("Status: ", "Ready");
         telemetry.addData("Pose: ", drive.getPoseEstimate());
         telemetry.update();
         waitForStart();
         timerService.start();
-        drive.followTrajectoryAsync(prepareToShoot);
-
-        //if (isStopRequested()) return;
+        if (isStopRequested()) return;
+        drive.followTrajectoryAsync(trajectories.get(currentState));
 
         while (!isStopRequested() && opModeIsActive()) {
             shooter.loop();
@@ -132,42 +60,12 @@ public class FullRedAuto extends LinearOpMode {
             drive.update();
             telemetry.addData("Pose", drive.getPoseEstimate());
             telemetry.addData("State", currentState);
-
             telemetry.update();
         }
 
     }
 
-    public void handleLift() {
-        shooter.setEnableShooter(true);
-        System.out.println("Running Indexer");
-        if (currentShooterServoLevel > 3) {
-            currentShooterServoLevel = 0;
-        }
-        timerService.registerUniqueTimerEvent(600, () -> {
-            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-            timerService.registerUniqueTimerEvent(600, () -> {
-                hardware.getServos().get("shooterServo").setPosition(1.0);
-                timerService.registerUniqueTimerEvent(150, () -> {
-                    hardware.getServos().get("shooterServo").setPosition(0.0);
-                    currentShooterServoLevel++;
-                    if (currentShooterServoLevel > 3) {
-                        isShooterEnabled = false;
-                    }
-                    if (isShooterEnabled) {
-                        handleLift();
-                    } else {
-                        currentShooterServoLevel = 0;
-                        hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-                        timerService.registerUniqueTimerEvent(750,()->{
-                            shooter.setEnableShooter(false);
-                            transition(currentState);
-                        });
-                    }
-                });
-            });
-        });
-    }
+
 
 
     public void transition(State state) {
@@ -181,40 +79,39 @@ public class FullRedAuto extends LinearOpMode {
                 isShooterEnabled = true;
                 handleLift();
                 break;
-            case DROP_FIRST_WOBBLE_GOAL:
+            case MOVE_TO_DROP_FIRST_WOBBLE_GOAL:
                 hardware.getServos().get("releaseLiftServo").setPosition(0.2);
-                drive.followTrajectoryAsync(dropOffFirstWobbleGoal);
+                drive.followTrajectoryAsync(trajectories.get(currentState));
                 break;
             case MOVE_TO_TO_RING_STACK:
-                    drive.followTrajectoryAsync(goToRingStack);
-
+                drive.followTrajectoryAsync(trajectories.get(currentState));
                 break;
             case INTAKE_RING_STACK:
-                drive.followTrajectoryAsync(intakeRingStack);
+                drive.followTrajectoryAsync(trajectories.get(currentState));
                 break;
             case MOVE_TO_GRAB_SECOND_GOAL:
-                drive.followTrajectoryAsync(goToSecondWobbleGoal);
+                drive.followTrajectoryAsync(trajectories.get(currentState));
+                break;
+            case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED:
+                drive.followTrajectoryAsync(trajectories.get(currentState));
                 break;
             case GRAB_SECOND_WOBBLE_GOAL:
-                timerService.registerUniqueTimerEvent(500,()->{
+                timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
                     hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                    timerService.registerUniqueTimerEvent(500,()->{
-                       hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                        timerService.registerUniqueTimerEvent(500,()->{
-                            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                            timerService.registerUniqueTimerEvent(500,()->{
-                                hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
-                                timerService.registerUniqueTimerEvent(1000,()->{
-                                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
-                                    transition(currentState);
-                                });
+                    timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                        hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                        timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                            timerService.registerUniqueTimerEvent(1000, "Wobble", () -> {
+                                hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                                transition(currentState);
                             });
                         });
                     });
                 });
                 break;
             case MOVE_TO_SHOOT_RING_STACK:
-                drive.followTrajectoryAsync(moveToShootRingStack);
+                drive.followTrajectoryAsync(trajectories.get(currentState));
                 break;
             case SHOOT_RING_STACK:
                 isShooterEnabled = true;
@@ -225,5 +122,36 @@ public class FullRedAuto extends LinearOpMode {
 
     }
 
+    public void handleLift() {
+
+        shooter.setEnableShooter(true);
+        System.out.println("Running Indexer");
+        if (currentShooterServoLevel > 3) {
+            currentShooterServoLevel = 0;
+        }
+        timerService.registerUniqueTimerEvent(600, "Index", () -> {
+            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+            timerService.registerUniqueTimerEvent(600, "Index", () -> {
+                hardware.getServos().get("shooterServo").setPosition(1.0);
+                timerService.registerUniqueTimerEvent(150, "Index", () -> {
+                    hardware.getServos().get("shooterServo").setPosition(0.0);
+                    currentShooterServoLevel++;
+                    if (currentShooterServoLevel > 3) {
+                        isShooterEnabled = false;
+                    }
+                    if (isShooterEnabled) {
+                        handleLift();
+                    } else {
+                        currentShooterServoLevel = 0;
+                        hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+                        timerService.registerUniqueTimerEvent(2000, "Index", () -> {
+                            shooter.setEnableShooter(false);
+                            transition(currentState);
+                        });
+                    }
+                });
+            });
+        });
+    }
 
 }
