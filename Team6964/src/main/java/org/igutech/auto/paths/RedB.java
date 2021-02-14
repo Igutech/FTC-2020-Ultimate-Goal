@@ -4,7 +4,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
-import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.State;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
@@ -14,7 +13,7 @@ import org.igutech.utils.events.Callback;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class RedA {
+public class RedB {
     public static Map<State, Trajectory> createTrajectory(SampleMecanumDrive drive, Pose2d start, Callback callback, Hardware hardware) {
         Map<State, Trajectory> trajectories = new EnumMap<State, Trajectory>(State.class);
         Trajectory prepareToShoot = drive.trajectoryBuilder(start, new DriveConstraints(20.0, 20.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0))
@@ -27,9 +26,9 @@ public class RedA {
                 .build();
         trajectories.put(State.PREPARE_TO_SHOOT, prepareToShoot);
 
-        Trajectory moveToRedA = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(15.0, -45.0), Math.toRadians(0.0))
-                .addDisplacementMarker(5, () -> {
+        Trajectory moveToRedB = drive.trajectoryBuilder(prepareToShoot.end())
+                .splineToConstantHeading(new Vector2d(35.0, -20.0), Math.toRadians(0.0))
+                .addDisplacementMarker(15, () -> {
                     hardware.getServos().get("wobbleGoalLift").setPosition(1);
                 })
                 .addDisplacementMarker(() -> {
@@ -38,9 +37,9 @@ public class RedA {
                 .splineToConstantHeading(new Vector2d(15.0, -35.0), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
-        trajectories.put(State.MOVE_TO_DROP_FIRST_WOBBLE_GOAL, moveToRedA);
+        trajectories.put(State.MOVE_TO_DROP_FIRST_WOBBLE_GOAL, moveToRedB);
 
-        Trajectory goToRingStack = drive.trajectoryBuilder(moveToRedA.end())
+        Trajectory goToRingStack = drive.trajectoryBuilder(moveToRedB.end())
                 .splineToLinearHeading(new Pose2d(0.0, -35.0, Math.toRadians(180.0)), Math.toRadians(180.0))
                 .addDisplacementMarker(callback::call)
                 .build();
@@ -80,6 +79,4 @@ public class RedA {
 
         return trajectories;
     }
-
-
 }

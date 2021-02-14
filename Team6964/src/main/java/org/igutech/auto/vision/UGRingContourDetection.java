@@ -19,53 +19,46 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
  */
 @TeleOp
 @Config
-public class UGRingContourDetection extends LinearOpMode
-{
+public class UGRingContourDetection extends LinearOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     UGRectDetector UGRectDetector;
     private static final int CAMERA_WIDTH = 320; // width  of wanted camera resolution
     private static final int CAMERA_HEIGHT = 240; // height of wanted camera resolution
 
-    public static  int HORIZON = 100; // horizon value to tune
+    public static int HORIZON = 100; // horizon value to tune
 
     private static final boolean DEBUG = true; // if debug is wanted, change to true
 
     private static final boolean USING_WEBCAM = true; // change to true if using webcam
     private static final String WEBCAM_NAME = "Webcam 1"; // insert webcam name from configuration if using webcam
 
-    private UGContourRingPipeline pipeline;
+    private UGContourRingPipeline pipeline = new UGContourRingPipeline(telemetry, true);
     private OpenCvCamera camera;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        int cameraMonitorViewId = this
-                .hardwareMap
-                .appContext
-                .getResources().getIdentifier(
-                        "cameraMonitorViewId",
-                        "id",
-                        hardwareMap.appContext.getPackageName()
-                );
-        {
-           // camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-            camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        int cameraMonitorViewId = this.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
-            camera.setPipeline(pipeline = new UGContourRingPipeline(telemetry, true));
 
-            UGContourRingPipeline.Config.setCAMERA_WIDTH(CAMERA_WIDTH);
+        // camera = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
 
-            UGContourRingPipeline.Config.setHORIZON(HORIZON);
+        camera.setPipeline(pipeline);
 
-            camera.openCameraDeviceAsync(() -> camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT));
+        UGContourRingPipeline.Config.setCAMERA_WIDTH(CAMERA_WIDTH);
 
-            waitForStart();
+        UGContourRingPipeline.Config.setHORIZON(HORIZON);
 
-            while (opModeIsActive()) {
-                String height = "[HEIGHT]" + " " + pipeline.getHeight();
-                telemetry.addData("[Ring Stack] >>", height);
-                telemetry.update();
-            }
+        camera.openCameraDeviceAsync(() -> camera.startStreaming(CAMERA_WIDTH, CAMERA_HEIGHT, OpenCvCameraRotation.UPRIGHT));
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            String height = "[HEIGHT]" + " " + pipeline.getHeight();
+            telemetry.addData("[Ring Stack] >>", height);
+            telemetry.update();
         }
+
     }
 }

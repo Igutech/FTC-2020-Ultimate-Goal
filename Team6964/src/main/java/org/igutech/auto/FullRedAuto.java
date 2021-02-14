@@ -2,14 +2,20 @@ package org.igutech.auto;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.igutech.auto.paths.RedA;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
+import org.igutech.auto.vision.UGRectDetector;
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,10 +52,29 @@ public class FullRedAuto extends LinearOpMode {
         shooter.init();
         trajectories = RedA.createTrajectory(drive, startPose, () -> transition(currentState), hardware);
 
-        telemetry.addData("Status: ", "Ready");
-        telemetry.addData("Pose: ", drive.getPoseEstimate());
-        telemetry.update();
-        waitForStart();
+
+         UGContourRingPipeline pipeline = new UGContourRingPipeline(telemetry, true);
+        int cameraMonitorViewId = this.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
+        OpenCvCamera camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+
+        camera.setPipeline(pipeline);
+
+        UGContourRingPipeline.Config.setCAMERA_WIDTH(320);
+
+        UGContourRingPipeline.Config.setHORIZON(100);
+
+        camera.openCameraDeviceAsync(() -> camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT));
+        while (!opModeIsActive() && !isStopRequested()) {
+            UGContourRingPipeline.Height height =  pipeline.getHeight();
+            telemetry.addData("Status: ", "Ready");
+            telemetry.addData("Stack: ", height);
+            telemetry.addData("Pose: ", drive.getPoseEstimate());
+            telemetry.update();
+
+        }
+
+        //waitForStart();
         timerService.start();
         if (isStopRequested()) return;
         drive.followTrajectoryAsync(trajectories.get(currentState));
