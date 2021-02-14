@@ -110,19 +110,19 @@ public class Index extends Module {
         }
         hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
         if (currentShooterServoLevel == 0) {
-            timerService.registerUniqueTimerEvent(600, () -> {
+            timerService.registerUniqueTimerEvent(600, "Wobble", () -> {
             });
         } else if (currentShooterServoLevel == 1) {
-            timerService.registerUniqueTimerEvent(600, () -> {
+            timerService.registerUniqueTimerEvent(600, "Wobble", () -> {
                 hardware.getServos().get("shooterServo").setPosition(0.32);
-                timerService.registerUniqueTimerEvent(150, () -> {
+                timerService.registerUniqueTimerEvent(150, "Wobble", () -> {
                     hardware.getServos().get("shooterServo").setPosition(0.1);
                 });
             });
         } else {
-            timerService.registerUniqueTimerEvent(250, () -> {
+            timerService.registerUniqueTimerEvent(250, "Wobble", () -> {
                 hardware.getServos().get("shooterServo").setPosition(0.32);
-                timerService.registerUniqueTimerEvent(200, () -> {
+                timerService.registerUniqueTimerEvent(200, "Wobble", () -> {
                     hardware.getServos().get("shooterServo").setPosition(0.1);
                 });
             });
