@@ -1,61 +1,59 @@
 package org.igutech.teleop.Modules;
 
 
+import org.igutech.teleop.Service;
 import org.igutech.utils.events.Callback;
 import org.igutech.utils.events.RepeatedTimerEvent;
 import org.igutech.utils.events.SingleTimerEvent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 
-public class TimerService {
-    private ArrayList<SingleTimerEvent> uniqueEvents = new ArrayList<>();
-    private ArrayList<RepeatedTimerEvent> repeatedTimerEvents = new ArrayList<>();
+public class TimerService extends Service {
     private long startTime;
-    private Queue<SingleTimerEvent> uniqueEventQueue = new LinkedList<>();
 
-
+    private ArrayList<RepeatedTimerEvent> repeatedTimerEvents = new ArrayList<>();
     private Queue<SingleTimerEvent> singleEventQueue = new LinkedList<>();
-    private ArrayList<SingleTimerEvent> events = new ArrayList<>();
+    private ArrayList<SingleTimerEvent> singleEvents = new ArrayList<>();
 
+    private Set<SingleTimerEvent> uniqueEventSet = new HashSet<>();
+    private Queue<SingleTimerEvent> uniqueEventsToBeAdded = new LinkedList<>();
 
+    public TimerService() {
+        super("TimerService");
+    }
 
+    @Override
     public void start() {
         startTime = System.currentTimeMillis();
     }
 
+    @Override
     public void loop() {
         long current = System.currentTimeMillis() - startTime;
 
-        ArrayList<SingleTimerEvent> eventsToBeRemoved = new ArrayList<>();
-        for (SingleTimerEvent i : singleEventQueue) {
-            events.add(i);
+        for (SingleTimerEvent e : uniqueEventsToBeAdded) {
+            uniqueEventSet.add(e);
         }
-        singleEventQueue.clear();
+        uniqueEventsToBeAdded.clear();
 
-        for (SingleTimerEvent e : events) {
-            if (!e.hasFired() && System.currentTimeMillis() >= e.getTime()) {
-                e.fire();
+        Iterator<SingleTimerEvent> iterator = uniqueEventSet.iterator();
+        while (iterator.hasNext()) {
+
+            SingleTimerEvent e = iterator.next();
+            if (System.currentTimeMillis() >= e.getTime()) {
+                try {
+                    e.fire();
+                } catch (Exception error) {
+                    error.printStackTrace();
+                }
+                iterator.remove();
             }
         }
-
-        if (uniqueEventQueue.peek() != null && uniqueEvents.size() == 0) {
-            uniqueEvents.add(uniqueEventQueue.peek());
-        }
-        uniqueEventQueue.clear();
-
-        for (SingleTimerEvent uniqueEvent : uniqueEvents) {
-            if (!uniqueEvent.hasFired() && System.currentTimeMillis() >= uniqueEvent.getTime()) {
-                uniqueEvent.fire();
-                eventsToBeRemoved.add(uniqueEvent);
-            }
-        }
-
-        for (SingleTimerEvent e : eventsToBeRemoved) {
-            uniqueEvents.remove(e);
-        }
-        eventsToBeRemoved.clear();
 
         for (RepeatedTimerEvent e : repeatedTimerEvents) {
             if (current >= e.getTime()) {
@@ -65,14 +63,15 @@ public class TimerService {
         }
     }
 
-    public void registerUniqueTimerEvent(int time, Callback m) {
-        uniqueEventQueue.add(new SingleTimerEvent(time, m));
+    public void registerUniqueTimerEvent(long time, String name, Callback m) {
+
+        uniqueEventsToBeAdded.add(new SingleTimerEvent(time, name, m));
     }
 
     public void registerSingleTimerEvent(int time, Callback m) {
         SingleTimerEvent event = new SingleTimerEvent(time, m);
-        if(events.size()>0){
-            event.setTime(events.get(events.size()-1).getTime()+time);
+        if (singleEvents.size() > 0) {
+            event.setTime(singleEvents.get(singleEvents.size() - 1).getTime() + time);
         }
         singleEventQueue.add(event);
     }
