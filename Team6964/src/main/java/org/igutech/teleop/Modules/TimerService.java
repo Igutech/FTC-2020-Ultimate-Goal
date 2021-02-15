@@ -46,6 +46,7 @@ public class TimerService extends Service {
 
             SingleTimerEvent e = iterator.next();
             if (System.currentTimeMillis() >= e.getTime()) {
+                System.out.println(e.getName()+" Firing");
                 try {
                     e.fire();
                 } catch (Exception error) {
