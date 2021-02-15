@@ -53,4 +53,8 @@ public enum State {
         if (this.nextState == null) return this;
         return this.nextState;
     }
+
+    public State getNextState(State wantedState) {
+        return wantedState;
+    }
 }

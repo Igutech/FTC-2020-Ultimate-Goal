@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.igutech.auto.paths.RedB;
 import org.igutech.auto.paths.RedA;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
 import org.igutech.config.Hardware;
@@ -30,6 +31,7 @@ public class FullRedAuto extends LinearOpMode {
     private SampleMecanumDrive drive;
     private Shooter shooter;
     private Map<State, Trajectory> trajectories;
+    private UGContourRingPipeline.Height height;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -37,7 +39,6 @@ public class FullRedAuto extends LinearOpMode {
         hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
         hardware.getServos().get("shooterServo").setPosition(0.1);
         hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
-
 
         liftPositions = new HashMap<>();
         liftPositions.put(0, 0.78);
@@ -52,8 +53,8 @@ public class FullRedAuto extends LinearOpMode {
         drive.setPoseEstimate(startPose);
 
         shooter.init();
-        trajectories = RedA.createTrajectory(drive, startPose, () -> transition(currentState), hardware);
-
+        Map<State, Trajectory> trajectoryA = RedA.createTrajectory(drive, startPose, () -> transition(currentState), hardware);
+        Map<State, Trajectory> trajectoryB = RedB.createTrajectory(drive, startPose, () -> transition(currentState), hardware);
 
         UGContourRingPipeline pipeline = new UGContourRingPipeline(telemetry, true);
         int cameraMonitorViewId = this.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -68,7 +69,7 @@ public class FullRedAuto extends LinearOpMode {
 
         camera.openCameraDeviceAsync(() -> camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT));
         while (!opModeIsActive() && !isStopRequested()) {
-            UGContourRingPipeline.Height height = pipeline.getHeight();
+            height = pipeline.getHeight();
             telemetry.addData("Status: ", "Ready");
             telemetry.addData("Stack: ", height);
             telemetry.addData("Pose: ", drive.getPoseEstimate());
@@ -79,6 +80,14 @@ public class FullRedAuto extends LinearOpMode {
         //waitForStart();
         timerService.start();
         if (isStopRequested()) return;
+        if (height == UGContourRingPipeline.Height.ONE) {
+            trajectories = trajectoryB;
+        } else if (height == UGContourRingPipeline.Height.ZERO) {
+            trajectories = trajectoryA;
+        } else {
+
+        }
+
         drive.followTrajectoryAsync(trajectories.get(currentState));
         camera.stopStreaming();
         camera.closeCameraDevice();
@@ -97,84 +106,161 @@ public class FullRedAuto extends LinearOpMode {
     public void transition(State state) {
         System.out.println("Transitioning to state " + state.getNextState() + " from " + currentState);
         currentState = state.getNextState();
-        switch (currentState) {
-            case PREPARE_TO_SHOOT:
-                //drive.followTrajectoryAsync(prepareToShoot);
-                break;
-            case SHOOTING_PRELOAD_RINGS:
-                isShooterEnabled = true;
-                handleLift(1);
-                break;
-            case MOVE_TO_DROP_FIRST_WOBBLE_GOAL:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case DROP_FIRST_WOBBLE_GOAL:
-                timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
-                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                    timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
-                        hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+        if (height == UGContourRingPipeline.Height.ONE) {
+            switch (currentState) {
+                case PREPARE_TO_SHOOT:
+                    //drive.followTrajectoryAsync(prepareToShoot);
+                    break;
+                case SHOOTING_PRELOAD_RINGS:
+                    isShooterEnabled = true;
+                    handleLift(1);
+                    break;
+                case MOVE_TO_DROP_FIRST_WOBBLE_GOAL:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case DROP_FIRST_WOBBLE_GOAL:
+                    timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+                        hardware.getServos().get("wobbleGoalLift").setPosition(1);
                         timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
-                            drive.followTrajectory((trajectories.get(currentState)));
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                            timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                                drive.followTrajectory((trajectories.get(currentState)));
+                            });
                         });
                     });
-                });
-                break;
-            case MOVE_TO_TO_RING_STACK:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case INTAKE_RING_STACK:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case MOVE_TO_GRAB_SECOND_GOAL:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED2:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case GRAB_SECOND_WOBBLE_GOAL:
-                hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                timerService.registerUniqueTimerEvent(100, "Wobble Servo", () -> {
-                    hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                    timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
-                        hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
-                        timerService.registerUniqueTimerEvent(400, "Wobble Lift", () -> {
-                            hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
-                            transition(currentState);
-                        });
-                    });
-                });
-                break;
-            case MOVE_TO_SHOOT_RING_STACK:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case SHOOT_RING_STACK:
-                isShooterEnabled = true;
-                handleLift(3);
-                break;
-            case MOVE_TO_DROP_SECOND_WOBBLE_GOAL:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
-            case DROP_SECOND_WOBBLE_GOAL:
-                timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+                    break;
+                case MOVE_TO_TO_RING_STACK:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case INTAKE_RING_STACK:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case MOVE_TO_GRAB_SECOND_GOAL:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED2:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case GRAB_SECOND_WOBBLE_GOAL:
                     hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                    timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                    timerService.registerUniqueTimerEvent(100, "Wobble Servo", () -> {
                         hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                        timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
-                            transition(currentState);
+                        timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                            timerService.registerUniqueTimerEvent(400, "Wobble Lift", () -> {
+                                hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                                transition(currentState);
+                            });
                         });
                     });
-                });
-                break;
-            case PARK:
-                drive.followTrajectoryAsync(trajectories.get(currentState));
-                break;
+                    break;
+                case MOVE_TO_SHOOT_RING_STACK:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case SHOOT_RING_STACK:
+                    isShooterEnabled = true;
+                    handleLift(3);
+                    break;
+                case MOVE_TO_DROP_SECOND_WOBBLE_GOAL:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case DROP_SECOND_WOBBLE_GOAL:
+                    timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+                        hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                        timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                            timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+                                transition(currentState);
+                            });
+                        });
+                    });
+                    break;
+                case PARK:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
 
-            default:
+                default:
+            }
+        } else if (UGContourRingPipeline.Height.ZERO == height) {
+            switch (currentState) {
+                case PREPARE_TO_SHOOT:
+                    break;
+                case SHOOTING_PRELOAD_RINGS:
+                    isShooterEnabled = true;
+                    handleLift(1);
+                    break;
+                case MOVE_TO_DROP_FIRST_WOBBLE_GOAL:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case DROP_FIRST_WOBBLE_GOAL:
+                    timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+                        hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                        timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                            timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                                drive.followTrajectory((trajectories.get(currentState)));
+                            });
+                        });
+                    });
+                    break;
+                case MOVE_TO_TO_RING_STACK:
+                    transition(currentState);
+                    break;
+                case INTAKE_RING_STACK:
+                    transition(currentState);
+                    break;
+                case MOVE_TO_GRAB_SECOND_GOAL:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED2:
+                    transition(currentState);
+                    break;
+                case GRAB_SECOND_WOBBLE_GOAL:
+                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                    timerService.registerUniqueTimerEvent(100, "Wobble Servo", () -> {
+                        hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                        timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                            timerService.registerUniqueTimerEvent(400, "Wobble Lift", () -> {
+                                hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                                transition(currentState);
+                            });
+                        });
+                    });
+                    break;
+                case MOVE_TO_SHOOT_RING_STACK:
+                    transition(currentState);
+                    break;
+                case SHOOT_RING_STACK:
+                    transition(currentState);
+                    break;
+                case MOVE_TO_DROP_SECOND_WOBBLE_GOAL:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+                case DROP_SECOND_WOBBLE_GOAL:
+                    timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+                        hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                        timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                            timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+                                transition(currentState);
+                            });
+                        });
+                    });
+                    break;
+                case PARK:
+                    drive.followTrajectoryAsync(trajectories.get(currentState));
+                    break;
+
+                default:
+            }
         }
-
     }
 
     public void handleLift(int shooterLevel) {
