@@ -13,6 +13,7 @@ import org.igutech.auto.vision.UGRectDetector;
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
+import org.igutech.teleop.Teleop;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -25,7 +26,7 @@ public class FullRedAuto extends LinearOpMode {
     private State currentState = State.PREPARE_TO_SHOOT;
     private Hardware hardware;
     private boolean isShooterEnabled = false;
-    private int currentShooterServoLevel = 0;
+    private int currentShooterServoLevel = 1;
     private HashMap<Integer, Double> liftPositions;
     private TimerService timerService;
     private SampleMecanumDrive drive;
@@ -36,6 +37,10 @@ public class FullRedAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         hardware = new Hardware(hardwareMap);
         hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+        hardware.getServos().get("shooterServo").setPosition(0.1);
+        hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+
+
 
         liftPositions = new HashMap<>();
         liftPositions.put(0, 0.78);
@@ -78,7 +83,8 @@ public class FullRedAuto extends LinearOpMode {
         timerService.start();
         if (isStopRequested()) return;
         drive.followTrajectoryAsync(trajectories.get(currentState));
-
+        camera.stopStreaming();
+        camera.closeCameraDevice();
         while (!isStopRequested() && opModeIsActive()) {
             shooter.loop();
             timerService.loop();
@@ -102,11 +108,22 @@ public class FullRedAuto extends LinearOpMode {
                 break;
             case SHOOTING_PRELOAD_RINGS:
                 isShooterEnabled = true;
-                handleLift();
+                handleLift(1);
                 break;
             case MOVE_TO_DROP_FIRST_WOBBLE_GOAL:
-                hardware.getServos().get("releaseLiftServo").setPosition(0.2);
+                //hardware.getServos().get("releaseLiftServo").setPosition(0.2);
                 drive.followTrajectoryAsync(trajectories.get(currentState));
+                break;
+            case DROP_FIRST_WOBBLE_GOAL:
+                timerService.registerUniqueTimerEvent(700,"Wobble",()->{
+                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                    timerService.registerUniqueTimerEvent(500,"Wobble",()->{
+                        hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                        timerService.registerUniqueTimerEvent(500,"Wobble",()->{
+                            drive.followTrajectory((trajectories.get(currentState)));
+                        });
+                    });
+                });
                 break;
             case MOVE_TO_TO_RING_STACK:
                 drive.followTrajectoryAsync(trajectories.get(currentState));
@@ -120,17 +137,19 @@ public class FullRedAuto extends LinearOpMode {
             case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED:
                 drive.followTrajectoryAsync(trajectories.get(currentState));
                 break;
+            case MOVE_TO_GRAB_SECOND_GOAL_CONTINUED2:
+                drive.followTrajectoryAsync(trajectories.get(currentState));
+                break;
             case GRAB_SECOND_WOBBLE_GOAL:
-                timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
-                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                    timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                timerService.registerUniqueTimerEvent(100, "Wobble Servo", () -> {
                         hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                        timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                        timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
                             hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
-                            timerService.registerUniqueTimerEvent(1000, "Wobble", () -> {
+                            timerService.registerUniqueTimerEvent(400, "Wobble Lift", () -> {
                                 hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
                                 transition(currentState);
-                            });
+
                         });
                     });
                 });
@@ -140,36 +159,54 @@ public class FullRedAuto extends LinearOpMode {
                 break;
             case SHOOT_RING_STACK:
                 isShooterEnabled = true;
-                handleLift();
+                handleLift(3 );
                 break;
+            case MOVE_TO_DROP_SECOND_WOBBLE_GOAL:
+                drive.followTrajectoryAsync(trajectories.get(currentState));
+                break;
+            case DROP_SECOND_WOBBLE_GOAL:
+                timerService.registerUniqueTimerEvent(700,"Wobble",()->{
+                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
+                    timerService.registerUniqueTimerEvent(500,"Wobble",()->{
+                        hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                        timerService.registerUniqueTimerEvent(300,"Wobble",()->{
+                            transition(currentState);
+                           // drive.followTrajectory((trajectories.get(currentState)));
+                        });
+                    });
+                });
+                break;
+            case PARK:
+                drive.followTrajectoryAsync(trajectories.get(currentState));
+                break;
+
+
             default:
         }
 
     }
 
-    public void handleLift() {
+    public void handleLift(int shooterLevel) {
 
         shooter.setEnableShooter(true);
+        currentShooterServoLevel = shooterLevel;
         System.out.println("Running Indexer");
-        if (currentShooterServoLevel > 3) {
-            currentShooterServoLevel = 0;
-        }
-        timerService.registerUniqueTimerEvent(600, "Index", () -> {
+        timerService.registerUniqueTimerEvent(1200, "Index", () -> {
             hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
             timerService.registerUniqueTimerEvent(600, "Index", () -> {
                 hardware.getServos().get("shooterServo").setPosition(1.0);
-                timerService.registerUniqueTimerEvent(150, "Index", () -> {
+                timerService.registerUniqueTimerEvent(600, "Index", () -> {
                     hardware.getServos().get("shooterServo").setPosition(0.0);
                     currentShooterServoLevel++;
                     if (currentShooterServoLevel > 3) {
                         isShooterEnabled = false;
                     }
                     if (isShooterEnabled) {
-                        handleLift();
+                        handleLift(currentShooterServoLevel);
                     } else {
                         currentShooterServoLevel = 0;
                         hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-                        timerService.registerUniqueTimerEvent(2000, "Index", () -> {
+                        timerService.registerUniqueTimerEvent(500, "Index", () -> {
                             shooter.setEnableShooter(false);
                             transition(currentState);
                         });
@@ -178,5 +215,37 @@ public class FullRedAuto extends LinearOpMode {
             });
         });
     }
+
+//    public void handleLift() {
+//
+//        shooter.setEnableShooter(true);
+//        System.out.println("Running Indexer");
+//        if (currentShooterServoLevel > 3) {
+//            currentShooterServoLevel = 0;
+//        }
+//        timerService.registerUniqueTimerEvent(600, "Index", () -> {
+//            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+//            timerService.registerUniqueTimerEvent(600, "Index", () -> {
+//                hardware.getServos().get("shooterServo").setPosition(1.0);
+//                timerService.registerUniqueTimerEvent(150, "Index", () -> {
+//                    hardware.getServos().get("shooterServo").setPosition(0.0);
+//                    currentShooterServoLevel++;
+//                    if (currentShooterServoLevel > 3) {
+//                        isShooterEnabled = false;
+//                    }
+//                    if (isShooterEnabled) {
+//                        handleLift();
+//                    } else {
+//                        currentShooterServoLevel = 0;
+//                        hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+//                        timerService.registerUniqueTimerEvent(1000, "Index", () -> {
+//                            shooter.setEnableShooter(false);
+//                            transition(currentState);
+//                        });
+//                    }
+//                });
+//            });
+//        });
+//    }
 
 }
