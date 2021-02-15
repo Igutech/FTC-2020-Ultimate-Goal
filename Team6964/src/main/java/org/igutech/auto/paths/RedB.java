@@ -16,67 +16,54 @@ import java.util.Map;
 public class RedB {
     public static Map<State, Trajectory> createTrajectory(SampleMecanumDrive drive, Pose2d start, Callback callback, Hardware hardware) {
         Map<State, Trajectory> trajectories = new EnumMap<State, Trajectory>(State.class);
-        Trajectory prepareToShoot = drive.trajectoryBuilder(start, new DriveConstraints(20.0, 20.0, 0.0, Math.toRadians(180.0), Math.toRadians(180.0), 0.0))
+        Trajectory prepareToShoot = drive.trajectoryBuilder(start)
                 .addDisplacementMarker(() -> {
                     hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
                 })
-                .splineToConstantHeading(new Vector2d(-55.0, -10.0), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(-5.0, -15.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-15.0, -20.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-7.0, -40), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.PREPARE_TO_SHOOT, prepareToShoot);
 
-        Trajectory moveToRedB = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(35.0, -20.0), Math.toRadians(0.0))
-                .addDisplacementMarker(15, () -> {
-                    hardware.getServos().get("wobbleGoalLift").setPosition(1);
-                })
-                .addDisplacementMarker(() -> {
-                    hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                })
-                .splineToConstantHeading(new Vector2d(15.0, -35.0), Math.toRadians(0.0))
+        Trajectory moveToRedA = drive.trajectoryBuilder(prepareToShoot.end())
+                .splineToConstantHeading(new Vector2d(12.0, -50), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
-        trajectories.put(State.MOVE_TO_DROP_FIRST_WOBBLE_GOAL, moveToRedB);
+        trajectories.put(State.MOVE_TO_DROP_FIRST_WOBBLE_GOAL, moveToRedA);
 
-        Trajectory goToRingStack = drive.trajectoryBuilder(moveToRedB.end())
-                .splineToLinearHeading(new Pose2d(0.0, -35.0, Math.toRadians(180.0)), Math.toRadians(180.0))
+        Trajectory moveAwayFromRedA = drive.trajectoryBuilder(moveToRedA.end())
+                .splineToConstantHeading(new Vector2d(12, -35), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
-        trajectories.put(State.MOVE_TO_TO_RING_STACK, goToRingStack);
+        trajectories.put(State.DROP_FIRST_WOBBLE_GOAL,moveAwayFromRedA);
 
-        Trajectory intakeRingStack = drive.trajectoryBuilder(goToRingStack.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                .addDisplacementMarker(() -> {
-                    hardware.getMotors().get("intake").setPower(-1);
-                    hardware.getMotors().get("intake2").setPower(-1);
-                })
-                .splineToConstantHeading(new Vector2d(-25.0, -35.0), Math.toRadians(180.0))
-                .addDisplacementMarker(callback::call)
-                .build();
-        trajectories.put(State.INTAKE_RING_STACK, intakeRingStack);
-
-        Trajectory moveToSecondWobbleGoal = drive.trajectoryBuilder(intakeRingStack.end())
-                .addDisplacementMarker(() -> {
-                    hardware.getMotors().get("intake").setPower(0);
-                    hardware.getMotors().get("intake2").setPower(0);
-                })
-                .splineToLinearHeading(new Pose2d(-35.0, -35.0, Math.toRadians(0.0)), Math.toRadians(0.0))
+        Trajectory moveToSecondWobbleGoal = drive.trajectoryBuilder(moveAwayFromRedA.end())
+                .splineToLinearHeading(new Pose2d(-44.5, -30.0, Math.toRadians(0.0)), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.MOVE_TO_GRAB_SECOND_GOAL, moveToSecondWobbleGoal);
 
         Trajectory moveToSecondWobbleGoalContinued = drive.trajectoryBuilder(moveToSecondWobbleGoal.end())
-                .splineToConstantHeading(new Vector2d(-45.0, -40.0), Math.toRadians(0.0))
+                .lineToConstantHeading(new Vector2d(-44.5, -38.5))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.MOVE_TO_GRAB_SECOND_GOAL_CONTINUED, moveToSecondWobbleGoalContinued);
 
-        Trajectory moveToShootRingStack = drive.trajectoryBuilder(moveToSecondWobbleGoalContinued.end())
-                .splineToConstantHeading(new Vector2d(0.0, -40.0), Math.toRadians(0.0))
+        Trajectory moveToRedASecondTime = drive.trajectoryBuilder(moveToSecondWobbleGoalContinued.end())
+                .splineToConstantHeading(new Vector2d(18, -45), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
-        trajectories.put(State.MOVE_TO_SHOOT_RING_STACK, moveToShootRingStack);
+        trajectories.put(State.MOVE_TO_DROP_SECOND_WOBBLE_GOAL, moveToRedASecondTime);
 
+        Trajectory park = drive.trajectoryBuilder(moveToRedASecondTime.end())
+                .splineToConstantHeading(new Vector2d(18, -35), Math.toRadians(0.0))
+                .addDisplacementMarker(callback::call)
+                .build();
+        trajectories.put(State.PARK,park);
         return trajectories;
     }
+
+
 }
