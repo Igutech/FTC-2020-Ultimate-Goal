@@ -21,19 +21,20 @@ public class RedB {
                     hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
                 })
                 .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(-15.0, -20.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-10.0, -20.0), Math.toRadians(0.0))
                 .splineToConstantHeading(new Vector2d(-7.0, -40), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.PREPARE_TO_SHOOT, prepareToShoot);
 
         Trajectory moveToRedB = drive.trajectoryBuilder(prepareToShoot.end())
-                .splineToConstantHeading(new Vector2d(40.0, -28.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(42.0, -28.0), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.MOVE_TO_DROP_FIRST_WOBBLE_GOAL, moveToRedB);
 
         Trajectory moveAwayFromRedB = drive.trajectoryBuilder(moveToRedB.end())
+                .splineToConstantHeading(new Vector2d(42.0, -20), Math.toRadians(0.0))
                 .splineToConstantHeading(new Vector2d(20.0, -20), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
@@ -87,13 +88,13 @@ public class RedB {
         trajectories.put(State.MOVE_TO_SHOOT_RING_STACK, moveToShootRingStack);
 
         Trajectory moveToRedASecondTime = drive.trajectoryBuilder(moveToShootRingStack.end())
-                .splineToConstantHeading(new Vector2d(34, -20), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(36, -20), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.MOVE_TO_DROP_SECOND_WOBBLE_GOAL, moveToRedASecondTime);
 
         Trajectory park = drive.trajectoryBuilder(moveToRedASecondTime.end())
-                .splineToConstantHeading(new Vector2d(34, -10), Math.toRadians(0.0))
+                .lineToConstantHeading(new Vector2d(10 , -10))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.PARK,park);

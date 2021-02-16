@@ -20,8 +20,8 @@ public class RedA {
                 .addDisplacementMarker(() -> {
                     hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
                 })
-                .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
-                .splineToConstantHeading(new Vector2d(-15.0, -20.0), Math.toRadians(0.0))
+//                .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
+//                .splineToConstantHeading(new Vector2d(-15.0, -20.0), Math.toRadians(0.0))
                 .splineToConstantHeading(new Vector2d(-7.0, -40), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
@@ -40,7 +40,7 @@ public class RedA {
         trajectories.put(State.DROP_FIRST_WOBBLE_GOAL,moveAwayFromRedA);
 
         Trajectory moveToSecondWobbleGoal = drive.trajectoryBuilder(moveAwayFromRedA.end())
-                .splineToLinearHeading(new Pose2d(-44.5, -30.0, Math.toRadians(0.0)), Math.toRadians(0.0))
+                .lineToConstantHeading(new Vector2d(-44.5, -30.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.MOVE_TO_GRAB_SECOND_GOAL, moveToSecondWobbleGoal);
@@ -52,7 +52,7 @@ public class RedA {
         trajectories.put(State.MOVE_TO_GRAB_SECOND_GOAL_CONTINUED, moveToSecondWobbleGoalContinued);
 
         Trajectory moveToRedBSecondTime = drive.trajectoryBuilder(moveToSecondWobbleGoalContinued.end())
-                .splineToConstantHeading(new Vector2d(18, -45), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(20, -45), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
         trajectories.put(State.MOVE_TO_DROP_SECOND_WOBBLE_GOAL, moveToRedBSecondTime);
