@@ -175,7 +175,7 @@ public class Shooter extends Module {
 
     }
 
-    public void setEnableShooter(boolean status) {
+    public void setShooterStatus(boolean status) {
         enableShooter = status;
     }
 

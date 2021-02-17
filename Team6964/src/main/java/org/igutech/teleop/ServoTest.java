@@ -40,7 +40,7 @@ public class ServoTest extends LinearOpMode {
 
     public void handleLift(int shooterLevel) {
 
-        shooter.setEnableShooter(true);
+        shooter.setShooterStatus(true);
         currentShooterServoLevel = shooterLevel;
         System.out.println("Running Indexer");
         hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
@@ -61,7 +61,7 @@ public class ServoTest extends LinearOpMode {
                     currentShooterServoLevel = 0;
                     hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
                     timerService.registerUniqueTimerEvent(500, "Index", () -> {
-                        shooter.setEnableShooter(false);
+                        shooter.setShooterStatus(false);
                     });
                 }
             });
