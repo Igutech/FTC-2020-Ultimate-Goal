@@ -68,7 +68,7 @@ public class RedB {
                 .addDisplacementMarker(callback::call)
                 .build();
 
-        Trajectory moveToShootRingStack = drive.trajectoryBuilder(moveToSecondWobbleGoalContinued.end())
+        Trajectory moveToShootRingStack = drive.trajectoryBuilder(moveToSecondWobbleGoalContinued2.end())
                 .splineToConstantHeading(new Vector2d(-7.0, -40.0), Math.toRadians(0.0))
                 .addDisplacementMarker(callback::call)
                 .build();
