@@ -42,7 +42,8 @@ public class GoToRingStack extends State {
     }
 
     @Override
-    public @Nullable State getNextState() {
+    public @Nullable
+    State getNextState() {
         if (done) {
             if (height == UGContourRingPipeline.Height.ZERO) {
                 return new IntakeRingStack(fullRedAuto, previous);

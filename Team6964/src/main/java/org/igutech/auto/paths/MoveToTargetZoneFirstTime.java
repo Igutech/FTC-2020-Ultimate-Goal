@@ -51,7 +51,7 @@ public class MoveToTargetZoneFirstTime extends State {
     public @Nullable
     State getNextState() {
         if (done) {
-            return new MoveToTargetZoneFirstTime(fullRedAuto, moveToTargetZone.end());
+            return new DropFirstWobbleGoal(fullRedAuto, moveToTargetZone.end());
         } else {
             return null;
         }

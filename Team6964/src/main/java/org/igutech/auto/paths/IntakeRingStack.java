@@ -17,10 +17,15 @@ public class IntakeRingStack extends State {
     private Trajectory inTakeRingStack;
     private Trajectory intakeRingStackC2;
     private Trajectory intakeRingStackC3;
+    private INTAKESTATE intakestate = INTAKESTATE.Intake;
+    private Pose2d previous;
+
     public IntakeRingStack(FullRedAuto fullRedAuto, Pose2d previous) {
         this.fullRedAuto = fullRedAuto;
+        this.previous = previous;
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
-            done=true;
+            intakestate = INTAKESTATE.OFF;
+            done = true;
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
             Trajectory intakeRingStackB = fullRedAuto.getDrive().trajectoryBuilder(previous, new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .addDisplacementMarker(() -> {
@@ -28,32 +33,35 @@ public class IntakeRingStack extends State {
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
                     .splineToConstantHeading(new Vector2d(-25.0, -35), Math.toRadians(180.0))
-                    .addDisplacementMarker(() -> done = true)
+                    .addDisplacementMarker(() -> {
+                        done = true;
+                        intakestate = INTAKESTATE.OFF;
+                    })
                     .build();
             inTakeRingStack = intakeRingStackB;
-        }else{
+        } else {
             Trajectory intakeRingStackC = fullRedAuto.getDrive().trajectoryBuilder(previous, new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .addDisplacementMarker(() -> {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
                     .splineToConstantHeading(new Vector2d(-12.0, -38), Math.toRadians(180.0))
-                    .addDisplacementMarker(()->{
-                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000,"Intake",() -> fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC2) );
+                    .addDisplacementMarker(() -> {
+                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
                     })
                     .build();
             inTakeRingStack = intakeRingStackC;
 
             intakeRingStackC2 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToConstantHeading(new Vector2d(-14.0, -38))
-                    .addDisplacementMarker(()->{
-                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000,"Intake",() ->fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC3));
+                    .addDisplacementMarker(() -> {
+                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000, "Intake", () -> intakestate = INTAKESTATE.IntakeC3);
                     })
                     .build();
-            intakeRingStackC3 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+            intakeRingStackC3 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC2.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToConstantHeading(new Vector2d(-16.0, -38))
-                    .addDisplacementMarker(()->{
-                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000,"Intake",() -> done = true );
+                    .addDisplacementMarker(() -> {
+                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000, "Intake", () -> intakestate = INTAKESTATE.OFF);
                     })
                     .build();
         }
@@ -61,16 +69,48 @@ public class IntakeRingStack extends State {
 
     @Override
     public void onEntry(@Nullable State previousState) {
-        fullRedAuto.getDrive().followTrajectoryAsync(inTakeRingStack);
+        if (inTakeRingStack != null) {
+            fullRedAuto.getDrive().followTrajectoryAsync(inTakeRingStack);
+            intakestate = INTAKESTATE.RUNNING;
+        }
     }
 
     @Override
-    public @Nullable State getNextState() {
+    public @Nullable
+    State getNextState() {
+        if (done) {
+            if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
+                return new GoToSecondWobbleGoal(fullRedAuto, previous);
+            } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
+                return new GoToSecondWobbleGoal(fullRedAuto, inTakeRingStack.end());
+            } else {
+                return new GoToSecondWobbleGoal(fullRedAuto, intakeRingStackC3.end());
+            }
+        }
         return null;
     }
 
     @Override
     public void loop() {
+        if (intakestate == INTAKESTATE.IntakeC2) {
+            fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC2);
+            intakestate = INTAKESTATE.RUNNING;
+        } else if (intakestate == INTAKESTATE.IntakeC3) {
+            fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC3);
+            intakestate = INTAKESTATE.RUNNING;
+        } else if (intakestate == INTAKESTATE.RUNNING) {
 
+        } else {
+            done = true;
+        }
     }
+
+    private enum INTAKESTATE {
+        Intake,
+        IntakeC2,
+        IntakeC3,
+        RUNNING,
+        OFF;
+    }
+
 }

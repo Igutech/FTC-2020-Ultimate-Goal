@@ -46,7 +46,8 @@ public class MoveAwayFromTargetZone extends State {
 
 
     @Override
-    public @Nullable State getNextState() {
+    public @Nullable
+    State getNextState() {
         if (done) {
             return new GoToRingStack(fullRedAuto, moveAwayFromTargetZone.end());
         } else {

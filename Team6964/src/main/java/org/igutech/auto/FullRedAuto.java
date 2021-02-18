@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.igutech.auto.paths.PrepareToShootState;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
+import org.igutech.auto.statelib.StateLibrary;
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
@@ -18,10 +19,6 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.HashMap;
-import java.util.Map;
-
-import dev.raneri.statelib.StateLibrary;
-
 @Autonomous
 public class FullRedAuto extends LinearOpMode {
     private Hardware hardware;
@@ -151,6 +148,31 @@ public class FullRedAuto extends LinearOpMode {
         }
     }
 
+    public void dropWobbleGoal(Callback callback){
+        timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+            hardware.getServos().get("wobbleGoalLift").setPosition(1);
+            timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+                hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+                timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+                    callback.call();
+                });
+            });
+        });
+    }
+
+    public void grabWobbleGoal(Callback callback){
+        hardware.getServos().get("wobbleGoalLift").setPosition(1);
+        timerService.registerUniqueTimerEvent(100, "Wobble Servo", () -> {
+            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+            timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
+                hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
+                timerService.registerUniqueTimerEvent(400, "Wobble Lift", () -> {
+                    hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+                    callback.call();
+                });
+            });
+        });
+    }
     public Hardware getHardware() {
         return hardware;
     }
