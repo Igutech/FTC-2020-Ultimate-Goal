@@ -22,6 +22,11 @@ import java.util.HashMap;
 @Autonomous
 public class FullRedAuto extends LinearOpMode {
     private Hardware hardware;
+
+    public void setShooterEnabled(boolean shooterEnabled) {
+        isShooterEnabled = shooterEnabled;
+    }
+
     private boolean isShooterEnabled = false;
     private int currentShooterServoLevel = 1;
     private HashMap<Integer, Double> liftPositions;
@@ -79,7 +84,7 @@ public class FullRedAuto extends LinearOpMode {
         timerService.start();
         if (isStopRequested()) return;
         transitioner.init(new PrepareToShootState(this, startPose));
-
+        System.out.println("Height :"+getHeight());
         camera.stopStreaming();
         camera.closeCameraDevice();
         while (!isStopRequested() && opModeIsActive()) {
@@ -102,7 +107,7 @@ public class FullRedAuto extends LinearOpMode {
         if (justStarted) {
             timerService.registerUniqueTimerEvent(1200, "Index", () -> increase(callback));
         } else {
-            timerService.registerUniqueTimerEvent(600, "Index", () -> increase(callback));
+            timerService.registerUniqueTimerEvent(500, "Index", () -> increase(callback));
         }
     }
 
@@ -118,7 +123,8 @@ public class FullRedAuto extends LinearOpMode {
         } else {
             currentShooterServoLevel = 0;
             System.out.println("Lift set to " + liftPositions.get(currentShooterServoLevel));
-            timerService.registerUniqueTimerEvent(500, "Index", () -> {
+            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
+            timerService.registerUniqueTimerEvent(600, "Index", () -> {
                 callback.call();
                 shooter.setShooterStatus(false);
                 System.out.println("ending");
@@ -133,40 +139,38 @@ public class FullRedAuto extends LinearOpMode {
             });
         } else if (currentShooterServoLevel == 1) {
             hardware.getServos().get("shooterServo").setPosition(0.32);
-            timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
                 hardware.getServos().get("shooterServo").setPosition(0.1);
                 isAtMaxLevel(callback);
 
             });
         } else {
             hardware.getServos().get("shooterServo").setPosition(0.32);
-            timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
                 hardware.getServos().get("shooterServo").setPosition(0.1);
                 isAtMaxLevel(callback);
-
             });
         }
     }
 
     public void dropWobbleGoal(Callback callback){
-        timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
             hardware.getServos().get("wobbleGoalLift").setPosition(1);
-            timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(700 , "Wobble", () -> {
                 hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+                timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
                     callback.call();
-                });
+
             });
         });
     }
 
     public void grabWobbleGoal(Callback callback){
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
-        timerService.registerUniqueTimerEvent(100, "Wobble Servo", () -> {
+        timerService.registerUniqueTimerEvent(700, "Wobble Servo", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
             timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
                 hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
-                timerService.registerUniqueTimerEvent(400, "Wobble Lift", () -> {
+                timerService.registerUniqueTimerEvent(250, "Wobble Lift", () -> {
                     hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
                     callback.call();
                 });

@@ -45,6 +45,7 @@ public class GoToRingStack extends State {
     public @Nullable
     State getNextState() {
         if (done) {
+            System.out.println("Transitioning from go to ring stack to intake ring stack");
             if (height == UGContourRingPipeline.Height.ZERO) {
                 return new IntakeRingStack(fullRedAuto, previous);
             } else {

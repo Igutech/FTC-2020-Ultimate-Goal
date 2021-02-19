@@ -32,6 +32,7 @@ public class MoveAwayFromTargetZone extends State {
             moveAwayFromTargetZone = moveAwayFromRedB;
         } else {
             Trajectory moveAwayFromRedC = fullRedAuto.getDrive().trajectoryBuilder(previous)
+                    .splineToConstantHeading(new Vector2d(50, -30), Math.toRadians(0.0))
                     .splineToConstantHeading(new Vector2d(20, -30), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
@@ -49,6 +50,8 @@ public class MoveAwayFromTargetZone extends State {
     public @Nullable
     State getNextState() {
         if (done) {
+            System.out.println("Transitioning from move away from target zone to go to ringstack");
+
             return new GoToRingStack(fullRedAuto, moveAwayFromTargetZone.end());
         } else {
             return null;

@@ -32,7 +32,7 @@ public class IntakeRingStack extends State {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
-                    .splineToConstantHeading(new Vector2d(-25.0, -35), Math.toRadians(180.0))
+                    .splineToConstantHeading(new Vector2d(-25.0, -38), Math.toRadians(180.0))
                     .addDisplacementMarker(() -> {
                         done = true;
                         intakestate = INTAKESTATE.OFF;
@@ -47,7 +47,8 @@ public class IntakeRingStack extends State {
                     })
                     .splineToConstantHeading(new Vector2d(-12.0, -38), Math.toRadians(180.0))
                     .addDisplacementMarker(() -> {
-                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
+                        //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
+                       intakestate = INTAKESTATE.IntakeC2;
                     })
                     .build();
             inTakeRingStack = intakeRingStackC;
@@ -55,13 +56,15 @@ public class IntakeRingStack extends State {
             intakeRingStackC2 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToConstantHeading(new Vector2d(-14.0, -38))
                     .addDisplacementMarker(() -> {
-                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000, "Intake", () -> intakestate = INTAKESTATE.IntakeC3);
+                        //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC3);
+                        intakestate = INTAKESTATE.IntakeC3;
                     })
                     .build();
             intakeRingStackC3 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC2.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToConstantHeading(new Vector2d(-16.0, -38))
                     .addDisplacementMarker(() -> {
-                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1000, "Intake", () -> intakestate = INTAKESTATE.OFF);
+                        //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.OFF);
+                        intakestate = INTAKESTATE.OFF;
                     })
                     .build();
         }
@@ -79,6 +82,8 @@ public class IntakeRingStack extends State {
     public @Nullable
     State getNextState() {
         if (done) {
+            System.out.println("Transitioning intake ring stack to go to second wobble goal");
+
             if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
                 return new GoToSecondWobbleGoal(fullRedAuto, previous);
             } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {

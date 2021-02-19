@@ -26,7 +26,7 @@ public class GoToSecondWobbleGoal extends State {
         } else {
 
             Trajectory moveToSecondWobbleGoalBC = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .addDisplacementMarker(() -> {
+                    .addDisplacementMarker(3,() -> {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
                     })

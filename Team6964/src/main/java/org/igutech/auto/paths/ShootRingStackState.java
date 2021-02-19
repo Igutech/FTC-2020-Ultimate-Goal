@@ -24,8 +24,10 @@ public class ShootRingStackState extends State {
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
             done = true;
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
+            fullRedAuto.setShooterEnabled(true);
             fullRedAuto.handleLift(3, true, () -> done = true);
         } else {
+            fullRedAuto.setShooterEnabled(true);
             fullRedAuto.handleLift(1, true, () -> done = true);
         }
     }

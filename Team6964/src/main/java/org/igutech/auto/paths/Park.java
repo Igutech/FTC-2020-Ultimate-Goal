@@ -26,7 +26,7 @@ public class Park extends State {
                     .build();
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
             park = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .splineToConstantHeading(new Vector2d(36, -20), Math.toRadians(0.0))
+                    .lineToConstantHeading(new Vector2d(15, -20))
                     .addDisplacementMarker(() -> done = true)
                     .build();
         } else {

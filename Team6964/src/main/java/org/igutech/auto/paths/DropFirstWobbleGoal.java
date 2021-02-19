@@ -27,6 +27,8 @@ public class DropFirstWobbleGoal extends State {
     @Override
     public State getNextState() {
         if (done) {
+            System.out.println("Transitioning from Drop wobble goal to move away from target zone");
+
             return new MoveAwayFromTargetZone(fullRedAuto, previous);
         }
         return null;

@@ -22,17 +22,18 @@ public class MoveToTargetZoneSecondTime extends State {
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
             moveToTargetZone = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .splineToConstantHeading(new Vector2d(20, -45), Math.toRadians(0.0))
-                    .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
+                    .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
             moveToTargetZone = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .splineToConstantHeading(new Vector2d(36, -20), Math.toRadians(0.0))
-                    .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
+                    //.splineToConstantHeading(new Vector2d(36, -20), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(36, -24), Math.toRadians(0.0))
+                    .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
         } else {
             moveToTargetZone = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToLinearHeading(new Pose2d(45, -54, Math.toRadians(90)))
-                    .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
+                    .lineToLinearHeading(new Pose2d(50, -50, Math.toRadians(90)))
+                    .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
         }
 

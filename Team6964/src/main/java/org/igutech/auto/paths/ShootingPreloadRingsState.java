@@ -19,6 +19,7 @@ public class ShootingPreloadRingsState extends State {
 
     @Override
     public void onEntry(@Nullable State previousState) {
+        fullRedAuto.setShooterEnabled(true);
         fullRedAuto.handleLift(1,true,()->{
             done = true;
         });
@@ -27,6 +28,8 @@ public class ShootingPreloadRingsState extends State {
     @Override
     public @Nullable State getNextState() {
         if(done){
+            System.out.println("Transitioning from shooting ring stack to move to target zone");
+
             return new MoveToTargetZoneFirstTime(fullRedAuto, previous);
         }
         return null;
