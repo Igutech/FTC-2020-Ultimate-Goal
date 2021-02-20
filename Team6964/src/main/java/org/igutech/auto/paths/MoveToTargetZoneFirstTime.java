@@ -21,20 +21,20 @@ public class MoveToTargetZoneFirstTime extends State {
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
             Trajectory moveToRedA = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .splineToConstantHeading(new Vector2d(12.0, -50), Math.toRadians(0.0))
-                    .addDisplacementMarker(() -> done = true)
+                    .addDisplacementMarker(() ->  fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
             moveToTargetZone = moveToRedA;
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
             Trajectory moveToRedB = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .splineToConstantHeading(new Vector2d(42.0, -30.0), Math.toRadians(0.0))
-                    .addDisplacementMarker(() -> done = true)
+                    .addDisplacementMarker(() ->  fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
             moveToTargetZone = moveToRedB;
 
         } else {
             Trajectory moveToRedC = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .lineToLinearHeading(new Pose2d(51.0, -60, Math.toRadians(90)))
-                    .addDisplacementMarker(() -> done = true)
+                    .addSpatialMarker(new Vector2d(40,-60),() ->  fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
             moveToTargetZone = moveToRedC;
         }
@@ -52,7 +52,7 @@ public class MoveToTargetZoneFirstTime extends State {
     State getNextState() {
         if (done) {
             System.out.println("Transitioning from Move to target zone to drop first wobble goal");
-            return new DropFirstWobbleGoal(fullRedAuto, moveToTargetZone.end());
+            return new MoveAwayFromTargetZone(fullRedAuto, moveToTargetZone.end());
         } else {
             return null;
         }
