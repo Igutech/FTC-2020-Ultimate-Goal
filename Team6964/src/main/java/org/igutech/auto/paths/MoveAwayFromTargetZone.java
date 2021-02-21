@@ -32,8 +32,8 @@ public class MoveAwayFromTargetZone extends State {
             moveAwayFromTargetZone = moveAwayFromRedB;
         } else {
             Trajectory moveAwayFromRedC = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .splineToConstantHeading(new Vector2d(50, -30), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(20, -30), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(50, -40), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(20, -40), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
             moveAwayFromTargetZone = moveAwayFromRedC;

@@ -32,8 +32,8 @@ public class MoveToTargetZoneSecondTime extends State {
                     .build();
         } else {
             moveToTargetZone = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToLinearHeading(new Pose2d(50, -50, Math.toRadians(90)))
-                    .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
+                    .lineToLinearHeading(new Pose2d(45, -55, Math.toRadians(90)))
+                    .addSpatialMarker(new Vector2d(35,-50),() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
         }
 

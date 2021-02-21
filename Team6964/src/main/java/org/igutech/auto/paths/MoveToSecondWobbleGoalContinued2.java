@@ -24,7 +24,7 @@ public class MoveToSecondWobbleGoalContinued2 extends State {
                     .build();
         }else{
              moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToConstantHeading(new Vector2d(-44.5, -38.5))
+                    .lineToConstantHeading(new Vector2d(-44.5, -37))
                     .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
                     .build();
         }
