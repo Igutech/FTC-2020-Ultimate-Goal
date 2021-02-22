@@ -50,8 +50,9 @@ public class MoveAwayFromTargetZone extends State {
     public @Nullable
     State getNextState() {
         if (done) {
-            System.out.println("Transitioning from move away from target zone to go to ringstack");
-
+            if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
+                return new GoToSecondWobbleGoal(fullRedAuto,moveAwayFromTargetZone.end());
+            }
             return new GoToRingStack(fullRedAuto, moveAwayFromTargetZone.end());
         } else {
             return null;

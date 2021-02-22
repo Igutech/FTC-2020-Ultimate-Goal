@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
 import org.igutech.auto.statelib.State;
+import org.igutech.teleop.Teleop;
 import org.jetbrains.annotations.Nullable;
 
 public class PrepareToShootState extends State {
@@ -15,7 +16,7 @@ public class PrepareToShootState extends State {
     private boolean done = false;
     private Trajectory prepareToShoot;
     private FullRedAuto redAutoInstance;
-
+    private Trajectory prepareToShoot2;
     public PrepareToShootState(FullRedAuto redAutoInstance, Pose2d start) {
         this.redAutoInstance = redAutoInstance;
         if (redAutoInstance.getHeight() == UGContourRingPipeline.Height.ZERO) {
@@ -27,7 +28,7 @@ public class PrepareToShootState extends State {
                     .splineToConstantHeading(new Vector2d(-7.0, -40), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
-        } else {
+        } else if(redAutoInstance.getHeight()== UGContourRingPipeline.Height.ONE){
             prepareToShoot = redAutoInstance.getDrive().trajectoryBuilder(start)
                     .addDisplacementMarker(() -> {
                         redAutoInstance.getHardware().getServos().get("wobbleGoalLift").setPosition(0.15);
@@ -37,6 +38,22 @@ public class PrepareToShootState extends State {
                     .splineToConstantHeading(new Vector2d(-10.0, -45), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
+        }else{
+            prepareToShoot = redAutoInstance.getDrive().trajectoryBuilder(start)
+                    .addDisplacementMarker(() -> {
+                        redAutoInstance.getHardware().getServos().get("wobbleGoalLift").setPosition(0.15);
+                        redAutoInstance.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
+                    })
+                    .splineToConstantHeading(new Vector2d(-60.0, -30.0), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(-45.0, -30.0), Math.toRadians(0.0))
+                    //.splineToConstantHeading(new Vector2d(-40.0, -38.0), Math.toRadians(0.0))
+                    .addDisplacementMarker(() -> redAutoInstance.getDrive().followTrajectoryAsync(prepareToShoot2))
+                    .build();
+            prepareToShoot2 = redAutoInstance.getDrive().trajectoryBuilder(prepareToShoot.end())
+                    .lineToLinearHeading(new Pose2d(-37,-38, Math.toRadians(-5)))
+                    .addDisplacementMarker(() -> done = true)
+                    .build();
+
         }
     }
 
@@ -49,6 +66,9 @@ public class PrepareToShootState extends State {
     public @Nullable State getNextState() {
         if (done) {
             System.out.println("Transitioning from move to shoot ring stack to shooting ring stack");
+            if(redAutoInstance.getHeight()== UGContourRingPipeline.Height.FOUR){
+                return new ShootingPreloadRingsState(redAutoInstance, prepareToShoot2.end());
+            }
             return new ShootingPreloadRingsState(redAutoInstance, prepareToShoot.end());
         } else {
             return null;

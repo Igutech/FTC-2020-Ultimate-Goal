@@ -29,8 +29,11 @@ public class ShootingPreloadRingsState extends State {
     public @Nullable State getNextState() {
         if(done){
             System.out.println("Transitioning from shooting ring stack to move to target zone");
-
-            return new MoveToTargetZoneFirstTime(fullRedAuto, previous);
+            if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
+                return new IntakeRingStack(fullRedAuto,previous);
+            }else{
+                return new MoveToTargetZoneFirstTime(fullRedAuto, previous);
+            }
         }
         return null;
     }

@@ -41,6 +41,9 @@ public class MoveToSecondWobbleGoalContinued2 extends State {
     @Override
     public State getNextState() {
         if (done) {
+            if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
+                return new MoveToTargetZoneSecondTime(fullRedAuto,moveToSecondWobbleGoalContinued2.end());
+            }
             return new MoveToShootRingStack(fullRedAuto, moveToSecondWobbleGoalContinued2.end());
         } else {
             return null;
