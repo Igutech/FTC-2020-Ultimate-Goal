@@ -21,9 +21,11 @@ public class StateLibrary {
     public void loop() {
         if (currentState == null) throw new IllegalStateException("State machine is not yet initialized!");
         State next = currentState.getNextState();
+
         if (next != null && next != currentState) {
             System.out.println();
             currentState.onExit(next);
+            System.out.println("Exiting " + currentState.getClass().getName()+" Entering "+next.getClass().getName());
             State oldState = currentState;
             currentState = next;
             currentState.onEntry(oldState);
