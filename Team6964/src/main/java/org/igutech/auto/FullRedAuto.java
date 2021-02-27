@@ -105,9 +105,9 @@ public class FullRedAuto extends LinearOpMode {
         hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
         System.out.println("Lift set to " + liftPositions.get(currentShooterServoLevel));
         if (justStarted) {
-            timerService.registerUniqueTimerEvent(1200, "Index", () -> increase(callback));
+            timerService.registerUniqueTimerEvent(1200, "handleLift", () -> increase(callback));
         } else {
-            timerService.registerUniqueTimerEvent(500, "Index", () -> increase(callback));
+            timerService.registerUniqueTimerEvent(500, "handleLift", () -> increase(callback));
         }
     }
 
@@ -117,36 +117,36 @@ public class FullRedAuto extends LinearOpMode {
             isShooterEnabled = false;
         }
         if (isShooterEnabled) {
-            timerService.registerUniqueTimerEvent(300, "Index", () -> {
+            timerService.registerUniqueTimerEvent(300, "IndexLift", () -> {
                 handleLift(currentShooterServoLevel, false, callback);
             });
         } else {
             currentShooterServoLevel = 0;
             System.out.println("Lift set to " + liftPositions.get(currentShooterServoLevel));
             hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-            timerService.registerUniqueTimerEvent(600, "Index", () -> {
-                callback.call();
-                shooter.setShooterStatus(false);
-                System.out.println("ending");
+            callback.call();
+            shooter.setShooterStatus(false);
+            System.out.println("Index ending");
+            timerService.registerUniqueTimerEvent(600, "IndexLift", () -> {
             });
         }
     }
 
     public void increase(Callback callback) {
         if (currentShooterServoLevel == 0) {
-            timerService.registerUniqueTimerEvent(600, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(600, "Index Increase", () -> {
                 System.out.println("testing");
             });
         } else if (currentShooterServoLevel == 1) {
             hardware.getServos().get("shooterServo").setPosition(0.32);
-            timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(400, "Index Increase", () -> {
                 hardware.getServos().get("shooterServo").setPosition(0.1);
                 isAtMaxLevel(callback);
 
             });
         } else {
             hardware.getServos().get("shooterServo").setPosition(0.32);
-            timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(400, "Index Increase", () -> {
                 hardware.getServos().get("shooterServo").setPosition(0.1);
                 isAtMaxLevel(callback);
             });

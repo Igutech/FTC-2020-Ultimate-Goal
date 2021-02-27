@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
 import org.igutech.auto.statelib.State;
+import org.igutech.teleop.Teleop;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -17,6 +18,7 @@ public class IntakeRingStack extends State {
     private Trajectory inTakeRingStack;
     private Trajectory intakeRingStackC2;
     private Trajectory intakeRingStackC3;
+    private Trajectory intakeRingStackC4;
     private INTAKESTATE intakestate = INTAKESTATE.Intake;
     private Pose2d previous;
 
@@ -40,31 +42,54 @@ public class IntakeRingStack extends State {
                     .build();
             inTakeRingStack = intakeRingStackB;
         } else {
+           fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.33);
+
             Trajectory intakeRingStackC = fullRedAuto.getDrive().trajectoryBuilder(previous, new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .addDisplacementMarker(() -> {
-                      //  fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
-                      //  fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
+                        fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
+                        fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
-                    .splineToConstantHeading(new Vector2d(-29.0, -38.0), Math.toRadians(180.0))
+                    .splineToConstantHeading(new Vector2d(-30.0, -38.0), Math.toRadians(180.0))
                     .addDisplacementMarker(() -> {
                         //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
-                       intakestate = INTAKESTATE.IntakeC2;
+                        intakestate = INTAKESTATE.IntakeC2;
                     })
                     .build();
             inTakeRingStack = intakeRingStackC;
 
             intakeRingStackC2 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                    .lineToConstantHeading(new Vector2d(-27.0, -38.0))
+                    .lineToConstantHeading(new Vector2d(-28.0, -38.0))
                     .addDisplacementMarker(() -> {
                         //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC3);
                         intakestate = INTAKESTATE.IntakeC3;
                     })
                     .build();
             intakeRingStackC3 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC2.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                    .lineToConstantHeading(new Vector2d(-25.0, -38.0))
+                    .lineToConstantHeading(new Vector2d(-22.0, -38.0))
                     .addDisplacementMarker(() -> {
-                        //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.OFF);
-                        intakestate = INTAKESTATE.OFF;
+                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1200, "Intake", () -> {
+                            fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
+                            fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
+                            fullRedAuto.setShooterEnabled(true);
+                            fullRedAuto.handleLift(1, true, () -> intakestate = INTAKESTATE.IntakeC4);
+                        });
+
+                    })
+                    .build();
+            intakeRingStackC4 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC3.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+                    .addDisplacementMarker(() -> {
+                        fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
+                        fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
+                    })
+                    .lineToConstantHeading(new Vector2d(-20.0, -38.0))
+                    .addDisplacementMarker(() -> {
+                        fullRedAuto.getTimerService().registerUniqueTimerEvent(1200, "Intake", () -> {
+                            fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
+                            fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
+                            fullRedAuto.setShooterEnabled(true);
+                            fullRedAuto.handleLift(3, true, () -> intakestate = INTAKESTATE.OFF);
+                        });
+
                     })
                     .build();
         }
@@ -82,8 +107,6 @@ public class IntakeRingStack extends State {
     public @Nullable
     State getNextState() {
         if (done) {
-            System.out.println("Transitioning intake ring stack to go to second wobble goal");
-
             if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
                 return new GoToSecondWobbleGoal(fullRedAuto, previous);
             } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
@@ -103,7 +126,10 @@ public class IntakeRingStack extends State {
         } else if (intakestate == INTAKESTATE.IntakeC3) {
             fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC3);
             intakestate = INTAKESTATE.RUNNING;
-        } else if (intakestate == INTAKESTATE.RUNNING) {
+        } else if (intakestate == INTAKESTATE.IntakeC4) {
+            fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC4);
+            intakestate = INTAKESTATE.RUNNING;
+        }else if(intakestate==INTAKESTATE.RUNNING){
 
         } else {
             done = true;
@@ -114,6 +140,7 @@ public class IntakeRingStack extends State {
         Intake,
         IntakeC2,
         IntakeC3,
+        IntakeC4,
         RUNNING,
         OFF;
     }

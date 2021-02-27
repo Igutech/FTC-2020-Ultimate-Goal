@@ -42,7 +42,6 @@ public class PrepareToShootState extends State {
             prepareToShoot = redAutoInstance.getDrive().trajectoryBuilder(start)
                     .addDisplacementMarker(() -> {
                         redAutoInstance.getHardware().getServos().get("wobbleGoalLift").setPosition(0.15);
-                        redAutoInstance.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
                     })
                     .splineToConstantHeading(new Vector2d(-60.0, -30.0), Math.toRadians(0.0))
                     .splineToConstantHeading(new Vector2d(-45.0, -30.0), Math.toRadians(0.0))
@@ -65,7 +64,6 @@ public class PrepareToShootState extends State {
     @Override
     public @Nullable State getNextState() {
         if (done) {
-            System.out.println("Transitioning from move to shoot ring stack to shooting ring stack");
             if(redAutoInstance.getHeight()== UGContourRingPipeline.Height.FOUR){
                 return new ShootingPreloadRingsState(redAutoInstance, prepareToShoot2.end());
             }
