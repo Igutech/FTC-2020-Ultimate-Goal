@@ -17,20 +17,19 @@ public class MoveToSecondWobbleGoalContinued2 extends State {
 
     public MoveToSecondWobbleGoalContinued2(FullRedAuto fullRedAuto, Pose2d previous) {
         this.fullRedAuto = fullRedAuto;
-        if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
+        if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
             moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .lineToConstantHeading(new Vector2d(-44.5, -38.5))
                     .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
                     .build();
-        }else{
-             moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
+        } else {
+            moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .lineToConstantHeading(new Vector2d(-44.5, -37))
                     .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
                     .build();
         }
 
     }
-
 
     @Override
     public void onEntry(@Nullable State previousState) {
@@ -41,8 +40,8 @@ public class MoveToSecondWobbleGoalContinued2 extends State {
     @Override
     public State getNextState() {
         if (done) {
-            if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
-                return new MoveToTargetZoneSecondTime(fullRedAuto,moveToSecondWobbleGoalContinued2.end());
+            if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
+                return new MoveToTargetZoneSecondTime(fullRedAuto, moveToSecondWobbleGoalContinued2.end());
             }
             return new MoveToShootRingStack(fullRedAuto, moveToSecondWobbleGoalContinued2.end());
         } else {

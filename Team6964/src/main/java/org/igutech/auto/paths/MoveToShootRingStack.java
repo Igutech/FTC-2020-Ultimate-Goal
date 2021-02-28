@@ -11,7 +11,6 @@ import org.igutech.auto.statelib.State;
 
 public class MoveToShootRingStack extends State {
 
-
     private FullRedAuto fullRedAuto;
     private Trajectory moveToRingStack;
     private boolean done = false;

@@ -7,11 +7,11 @@ import org.igutech.auto.FullRedAuto;
 import org.igutech.auto.statelib.State;
 import org.jetbrains.annotations.Nullable;
 
-
 public class ShootingPreloadRingsState extends State {
     private FullRedAuto fullRedAuto;
     private boolean done = false;
     private Pose2d previous;
+
     public ShootingPreloadRingsState(FullRedAuto fullRedAuto, Pose2d previous) {
         this.fullRedAuto = fullRedAuto;
         this.previous = previous;
@@ -20,20 +20,21 @@ public class ShootingPreloadRingsState extends State {
     @Override
     public void onEntry(@Nullable State previousState) {
         fullRedAuto.setShooterEnabled(true);
-        fullRedAuto.handleLift(1,true,()->{
+        fullRedAuto.handleLift(1, true, () -> {
             done = true;
             System.out.println("Shooting preload ring finished");
         });
     }
 
     @Override
-    public @Nullable State getNextState() {
-        if(done){
+    public @Nullable
+    State getNextState() {
+        if (done) {
             System.out.println("Transitioning from shooting ring stack to move to target zone");
-            if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
+            if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
                 fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
-                return new IntakeRingStack(fullRedAuto,previous);
-            }else{
+                return new IntakeRingStack(fullRedAuto, previous);
+            } else {
                 return new MoveToTargetZoneFirstTime(fullRedAuto, previous);
             }
         }

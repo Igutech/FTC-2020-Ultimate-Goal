@@ -8,7 +8,6 @@ import org.igutech.auto.FullRedAuto;
 import org.igutech.auto.statelib.State;
 import org.jetbrains.annotations.Nullable;
 
-
 public class GoToRingStack extends State {
     private boolean done = false;
     private FullRedAuto fullRedAuto;

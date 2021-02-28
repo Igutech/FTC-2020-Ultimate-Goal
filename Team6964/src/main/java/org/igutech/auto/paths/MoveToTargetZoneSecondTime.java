@@ -26,14 +26,13 @@ public class MoveToTargetZoneSecondTime extends State {
                     .build();
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
             moveToTargetZone = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    //.splineToConstantHeading(new Vector2d(36, -20), Math.toRadians(0.0))
                     .splineToConstantHeading(new Vector2d(36, -24), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
         } else {
             moveToTargetZone = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .lineToLinearHeading(new Pose2d(45, -55, Math.toRadians(90)))
-                    .addSpatialMarker(new Vector2d(35,-50),() -> fullRedAuto.dropWobbleGoal(() -> done = true))
+                    .addSpatialMarker(new Vector2d(35, -50), () -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
         }
 
@@ -52,6 +51,5 @@ public class MoveToTargetZoneSecondTime extends State {
         } else {
             return null;
         }
-
     }
 }

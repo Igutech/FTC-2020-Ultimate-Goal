@@ -50,7 +50,6 @@ public class IntakeRingStack extends State {
                     })
                     .lineToLinearHeading(new Pose2d(-30.0, -38.0, 0))
                     .addDisplacementMarker(() -> {
-                        //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
                         intakestate = INTAKESTATE.IntakeC2;
                     })
                     .build();
@@ -59,7 +58,6 @@ public class IntakeRingStack extends State {
             intakeRingStackC2 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(15.0, 15, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToConstantHeading(new Vector2d(-28.5, -38.0))
                     .addDisplacementMarker(() -> {
-                        //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC3);
                         intakestate = INTAKESTATE.IntakeC3;
                     })
                     .build();
@@ -70,7 +68,7 @@ public class IntakeRingStack extends State {
                             fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
                             fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
                             fullRedAuto.setShooterEnabled(true);
-                            fullRedAuto.handleLift(1, true, () ->{
+                            fullRedAuto.handleLift(1, true, () -> {
                                 intakestate = INTAKESTATE.IntakeC4;
                                 System.out.println("Finished shooting 1-3 ring of the stack");
 

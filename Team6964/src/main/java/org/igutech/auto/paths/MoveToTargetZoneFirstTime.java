@@ -9,7 +9,6 @@ import org.igutech.auto.FullRedAuto;
 import org.igutech.auto.statelib.State;
 import org.jetbrains.annotations.Nullable;
 
-
 public class MoveToTargetZoneFirstTime extends State {
 
     private boolean done = false;
@@ -21,20 +20,19 @@ public class MoveToTargetZoneFirstTime extends State {
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ZERO) {
             Trajectory moveToRedA = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .splineToConstantHeading(new Vector2d(12.0, -50), Math.toRadians(0.0))
-                    .addDisplacementMarker(() ->  fullRedAuto.dropWobbleGoal(() -> done = true))
+                    .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
             moveToTargetZone = moveToRedA;
         } else if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.ONE) {
             Trajectory moveToRedB = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .splineToConstantHeading(new Vector2d(42.0, -30.0), Math.toRadians(0.0))
-                    .addDisplacementMarker(() ->  fullRedAuto.dropWobbleGoal(() -> done = true))
+                    .addDisplacementMarker(() -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
             moveToTargetZone = moveToRedB;
-
         } else {
             Trajectory moveToRedC = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .lineToLinearHeading(new Pose2d(51.0, -60, Math.toRadians(90)))
-                    .addSpatialMarker(new Vector2d(40,-60),() ->  fullRedAuto.dropWobbleGoal(() -> done = true))
+                    .addSpatialMarker(new Vector2d(40, -60), () -> fullRedAuto.dropWobbleGoal(() -> done = true))
                     .build();
             moveToTargetZone = moveToRedC;
         }
@@ -45,7 +43,6 @@ public class MoveToTargetZoneFirstTime extends State {
     public void onEntry(@Nullable State previousState) {
         fullRedAuto.getDrive().followTrajectoryAsync(moveToTargetZone);
     }
-
 
     @Override
     public @Nullable

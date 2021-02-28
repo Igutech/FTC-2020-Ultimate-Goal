@@ -45,13 +45,12 @@ public class MoveAwayFromTargetZone extends State {
         fullRedAuto.getDrive().followTrajectoryAsync(moveAwayFromTargetZone);
     }
 
-
     @Override
     public @Nullable
     State getNextState() {
         if (done) {
-            if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
-                return new Park(fullRedAuto,moveAwayFromTargetZone.end());
+            if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
+                return new Park(fullRedAuto, moveAwayFromTargetZone.end());
             }
             return new GoToRingStack(fullRedAuto, moveAwayFromTargetZone.end());
         } else {
