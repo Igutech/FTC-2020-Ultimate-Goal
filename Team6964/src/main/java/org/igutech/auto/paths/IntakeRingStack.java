@@ -48,7 +48,7 @@ public class IntakeRingStack extends State {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
-                    .lineToLinearHeading(new Pose2d(-30.0, -38.0,0))
+                    .lineToLinearHeading(new Pose2d(-30.0, -38.0, 0))
                     .addDisplacementMarker(() -> {
                         //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
                         intakestate = INTAKESTATE.IntakeC2;
@@ -70,7 +70,11 @@ public class IntakeRingStack extends State {
                             fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
                             fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
                             fullRedAuto.setShooterEnabled(true);
-                            fullRedAuto.handleLift(1, true, () -> intakestate = INTAKESTATE.IntakeC4);
+                            fullRedAuto.handleLift(1, true, () ->{
+                                intakestate = INTAKESTATE.IntakeC4;
+                                System.out.println("Finished shooting 1-3 ring of the stack");
+
+                            });
                         });
 
                     })
@@ -86,7 +90,11 @@ public class IntakeRingStack extends State {
                             fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
                             fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
                             fullRedAuto.setShooterEnabled(true);
-                            fullRedAuto.handleLift(3, true, () -> intakestate = INTAKESTATE.OFF);
+                            fullRedAuto.handleLift(3, true, () -> {
+                                System.out.println("Finished shooting 4th ring of the stack");
+                                intakestate = INTAKESTATE.OFF;
+
+                            });
                         });
 
                     })
@@ -128,7 +136,7 @@ public class IntakeRingStack extends State {
         } else if (intakestate == INTAKESTATE.IntakeC4) {
             fullRedAuto.getDrive().followTrajectoryAsync(intakeRingStackC4);
             intakestate = INTAKESTATE.RUNNING;
-        }else if(intakestate==INTAKESTATE.RUNNING){
+        } else if (intakestate == INTAKESTATE.RUNNING) {
 
         } else {
             done = true;

@@ -25,7 +25,7 @@ public class GoToRingStack extends State {
         } else {
             goToRingStack = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .addDisplacementMarker(() -> {
-                        fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.32);
+                        fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
                     })
                     .splineToLinearHeading(new Pose2d(0.0, -35.0, Math.toRadians(180.0)), Math.toRadians(180.0))
                     .addDisplacementMarker(() -> done = true)

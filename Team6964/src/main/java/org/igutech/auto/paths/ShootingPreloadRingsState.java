@@ -22,6 +22,7 @@ public class ShootingPreloadRingsState extends State {
         fullRedAuto.setShooterEnabled(true);
         fullRedAuto.handleLift(1,true,()->{
             done = true;
+            System.out.println("Shooting preload ring finished");
         });
     }
 
