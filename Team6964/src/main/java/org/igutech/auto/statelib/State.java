@@ -10,7 +10,8 @@ public abstract class State {
      *
      * @param previousState The state the machine is transitioning from, or null if this is the first state
      */
-    public void onEntry(@Nullable State previousState) {}
+    public void onEntry(@Nullable State previousState) {
+    }
 
     /**
      * Called when the state machine transitions to a new state from this one
@@ -18,19 +19,21 @@ public abstract class State {
      *
      * @param nextState the state the machine is transitioning to, or null if the state machine is exiting
      */
-    public void onExit(@Nullable State nextState) {}
+    public void onExit(@Nullable State nextState) {
+    }
 
     /**
      * Gets the next state for this state machine.
      *
      * @return The new state, or null/this to indicate that no transition should take place
      */
-    public abstract @Nullable
-    State getNextState();
+    @Nullable
+    public abstract State getNextState();
 
     /**
      * Called every loop iteration while this state is active
      */
-    public void loop() {}
+    public void loop() {
+    }
 
 }

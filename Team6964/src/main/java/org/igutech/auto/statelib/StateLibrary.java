@@ -10,7 +10,8 @@ public class StateLibrary {
      * @param state The initial state of the state machine
      */
     public void init(State state) {
-        if (currentState != null) throw new IllegalStateException("State machine has already been initialized!");
+        if (currentState != null)
+            throw new IllegalStateException("State machine has already been initialized!");
         currentState = state;
         state.onEntry(null);
     }
@@ -19,12 +20,12 @@ public class StateLibrary {
      * Loop the state machine. This should be called on every iteration.
      */
     public void loop() {
-        if (currentState == null) throw new IllegalStateException("State machine is not yet initialized!");
+        if (currentState == null)
+            throw new IllegalStateException("State machine is not yet initialized!");
         State next = currentState.getNextState();
-        System.out.println("Currently on state: "+currentState.toString());
-
+        System.out.println("Currently on state: " + currentState.toString());
         if (next != null && next != currentState) {
-            System.out.println("Exiting " + currentState.getClass().getName()+" Entering "+next.getClass().getName());
+            System.out.println("Exiting " + currentState.getClass().getName() + " Entering " + next.getClass().getName());
             currentState.onExit(next);
             State oldState = currentState;
             currentState = next;
@@ -38,7 +39,8 @@ public class StateLibrary {
      * Shutdown the state machine. Further calls to loop() will throw exceptions, until init() is called.
      */
     public void shutdown() {
-        if (currentState == null) throw new IllegalStateException("State machine is not initialized and cannot be shut down!");
+        if (currentState == null)
+            throw new IllegalStateException("State machine is not initialized and cannot be shut down!");
         currentState.onExit(null);
         currentState = null;
     }
