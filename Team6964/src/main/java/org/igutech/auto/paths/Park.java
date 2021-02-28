@@ -8,7 +8,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
-import org.igutech.auto.statelib.State;
+import dev.raneri.statelib.State;
 
 public class Park extends State {
     private FullRedAuto fullRedAuto;

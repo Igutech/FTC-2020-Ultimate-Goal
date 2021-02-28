@@ -6,8 +6,8 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
-import org.igutech.auto.statelib.State;
-import org.igutech.teleop.Teleop;
+import dev.raneri.statelib.State;
+
 import org.jetbrains.annotations.Nullable;
 
 public class PrepareToShootState extends State {

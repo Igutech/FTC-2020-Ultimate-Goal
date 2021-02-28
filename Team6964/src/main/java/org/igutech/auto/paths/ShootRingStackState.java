@@ -6,7 +6,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
-import org.igutech.auto.statelib.State;
+
+import dev.raneri.statelib.State;
 
 public class ShootRingStackState extends State {
 

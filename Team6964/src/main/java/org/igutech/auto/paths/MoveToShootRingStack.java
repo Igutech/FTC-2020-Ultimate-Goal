@@ -7,7 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
 import org.igutech.auto.FullRedAuto;
-import org.igutech.auto.statelib.State;
+import dev.raneri.statelib.State;
 
 public class MoveToShootRingStack extends State {
 

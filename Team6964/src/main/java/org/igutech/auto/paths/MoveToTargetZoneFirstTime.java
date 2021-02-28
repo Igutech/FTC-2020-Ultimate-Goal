@@ -6,7 +6,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
-import org.igutech.auto.statelib.State;
+import dev.raneri.statelib.State;
 import org.jetbrains.annotations.Nullable;
 
 public class MoveToTargetZoneFirstTime extends State {

@@ -1,7 +1,6 @@
 package org.igutech.auto;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -9,7 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.igutech.auto.paths.PrepareToShootState;
 import org.igutech.auto.roadrunner.SampleMecanumDrive;
-import org.igutech.auto.statelib.StateLibrary;
+
+import dev.raneri.statelib.StateLibrary;
+
 import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
@@ -19,6 +20,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.HashMap;
+
 @Autonomous
 public class FullRedAuto extends LinearOpMode {
     private Hardware hardware;
@@ -58,7 +60,13 @@ public class FullRedAuto extends LinearOpMode {
 
         shooter.init();
         StateLibrary transitioner = new StateLibrary();
-
+        transitioner.addStateTransitionHandler(event -> {
+            if (event.getFinalState() == null) {
+                return;
+            }
+            System.out.println("Exiting " + event.getInitialState().getClass().getName() + " and going into " + event.getFinalState().getClass().getName());
+        });
+        transitioner.addLoopStartHandler(event -> System.out.println("Current state: " + event.getState().getClass().getName()));
         UGContourRingPipeline pipeline = new UGContourRingPipeline(telemetry, true);
         int cameraMonitorViewId = this.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
@@ -84,7 +92,7 @@ public class FullRedAuto extends LinearOpMode {
         timerService.start();
         if (isStopRequested()) return;
         transitioner.init(new PrepareToShootState(this, startPose));
-        System.out.println("Height :"+getHeight());
+        System.out.println("Height :" + getHeight());
         camera.stopStreaming();
         camera.closeCameraDevice();
 
@@ -154,18 +162,18 @@ public class FullRedAuto extends LinearOpMode {
         }
     }
 
-    public void dropWobbleGoal(Callback callback){
-            hardware.getServos().get("wobbleGoalLift").setPosition(1);
-            timerService.registerUniqueTimerEvent(700 , "Wobble", () -> {
-                hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-                timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
-                    callback.call();
+    public void dropWobbleGoal(Callback callback) {
+        hardware.getServos().get("wobbleGoalLift").setPosition(1);
+        timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+            hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
+            timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
+                callback.call();
 
             });
         });
     }
 
-    public void grabWobbleGoal(Callback callback){
+    public void grabWobbleGoal(Callback callback) {
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
         timerService.registerUniqueTimerEvent(700, "Wobble Servo", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
@@ -178,6 +186,7 @@ public class FullRedAuto extends LinearOpMode {
             });
         });
     }
+
     public Hardware getHardware() {
         return hardware;
     }
