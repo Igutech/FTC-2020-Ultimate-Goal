@@ -42,14 +42,13 @@ public class IntakeRingStack extends State {
                     .build();
             inTakeRingStack = intakeRingStackB;
         } else {
-           fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.33);
 
-            Trajectory intakeRingStackC = fullRedAuto.getDrive().trajectoryBuilder(previous, new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+            Trajectory intakeRingStackC = fullRedAuto.getDrive().trajectoryBuilder(previous, new DriveConstraints(15, 15, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .addDisplacementMarker(() -> {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
-                    .splineToConstantHeading(new Vector2d(-30.0, -38.0), Math.toRadians(180.0))
+                    .lineToLinearHeading(new Pose2d(-30.0, -38.0,0))
                     .addDisplacementMarker(() -> {
                         //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC2);
                         intakestate = INTAKESTATE.IntakeC2;
@@ -57,14 +56,14 @@ public class IntakeRingStack extends State {
                     .build();
             inTakeRingStack = intakeRingStackC;
 
-            intakeRingStackC2 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
-                    .lineToConstantHeading(new Vector2d(-28.0, -38.0))
+            intakeRingStackC2 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC.end(), new DriveConstraints(15.0, 15, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+                    .lineToConstantHeading(new Vector2d(-28.5, -38.0))
                     .addDisplacementMarker(() -> {
                         //fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "Intake", () -> intakestate = INTAKESTATE.IntakeC3);
                         intakestate = INTAKESTATE.IntakeC3;
                     })
                     .build();
-            intakeRingStackC3 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC2.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+            intakeRingStackC3 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC2.end(), new DriveConstraints(15, 15, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToConstantHeading(new Vector2d(-22.0, -38.0))
                     .addDisplacementMarker(() -> {
                         fullRedAuto.getTimerService().registerUniqueTimerEvent(1200, "Intake", () -> {
@@ -76,12 +75,12 @@ public class IntakeRingStack extends State {
 
                     })
                     .build();
-            intakeRingStackC4 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC3.end(), new DriveConstraints(30.0, 30.0, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
+            intakeRingStackC4 = fullRedAuto.getDrive().trajectoryBuilder(intakeRingStackC3.end(), new DriveConstraints(15, 15, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .addDisplacementMarker(() -> {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(-1);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(-1);
                     })
-                    .lineToConstantHeading(new Vector2d(-20.0, -38.0))
+                    .lineToConstantHeading(new Vector2d(-15.0, -38.0))
                     .addDisplacementMarker(() -> {
                         fullRedAuto.getTimerService().registerUniqueTimerEvent(1200, "Intake", () -> {
                             fullRedAuto.getHardware().getMotors().get("intake").setPower(0);

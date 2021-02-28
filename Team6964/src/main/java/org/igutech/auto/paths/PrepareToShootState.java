@@ -39,6 +39,7 @@ public class PrepareToShootState extends State {
                     .addDisplacementMarker(() -> done = true)
                     .build();
         }else{
+
             prepareToShoot = redAutoInstance.getDrive().trajectoryBuilder(start)
                     .addDisplacementMarker(() -> {
                         redAutoInstance.getHardware().getServos().get("wobbleGoalLift").setPosition(0.15);
@@ -49,8 +50,11 @@ public class PrepareToShootState extends State {
                     .addDisplacementMarker(() -> redAutoInstance.getDrive().followTrajectoryAsync(prepareToShoot2))
                     .build();
             prepareToShoot2 = redAutoInstance.getDrive().trajectoryBuilder(prepareToShoot.end())
-                    .lineToLinearHeading(new Pose2d(-37,-38, Math.toRadians(-5)))
-                    .addDisplacementMarker(() -> done = true)
+                    .lineToLinearHeading(new Pose2d(-37,-38, Math.toRadians(-4)))
+                    .addDisplacementMarker(() -> {
+                        done = true;
+                        System.out.println("Prepare to shoot callback ended");
+                    })
                     .build();
 
         }

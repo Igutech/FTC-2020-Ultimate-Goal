@@ -30,6 +30,7 @@ public class ShootingPreloadRingsState extends State {
         if(done){
             System.out.println("Transitioning from shooting ring stack to move to target zone");
             if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
+                fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
                 return new IntakeRingStack(fullRedAuto,previous);
             }else{
                 return new MoveToTargetZoneFirstTime(fullRedAuto, previous);

@@ -51,7 +51,7 @@ public class MoveAwayFromTargetZone extends State {
     State getNextState() {
         if (done) {
             if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.FOUR){
-                return new GoToSecondWobbleGoal(fullRedAuto,moveAwayFromTargetZone.end());
+                return new Park(fullRedAuto,moveAwayFromTargetZone.end());
             }
             return new GoToRingStack(fullRedAuto, moveAwayFromTargetZone.end());
         } else {

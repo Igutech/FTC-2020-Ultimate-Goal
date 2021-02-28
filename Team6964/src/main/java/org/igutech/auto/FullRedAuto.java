@@ -87,6 +87,7 @@ public class FullRedAuto extends LinearOpMode {
         System.out.println("Height :"+getHeight());
         camera.stopStreaming();
         camera.closeCameraDevice();
+
         while (!isStopRequested() && opModeIsActive()) {
             transitioner.loop();
             shooter.loop();
