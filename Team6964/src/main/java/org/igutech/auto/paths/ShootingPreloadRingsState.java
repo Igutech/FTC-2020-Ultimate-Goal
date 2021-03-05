@@ -13,7 +13,6 @@ public class ShootingPreloadRingsState extends State {
     private FullRedAuto fullRedAuto;
     private boolean done = false;
     private Pose2d previous;
-    private Trajectory backUpFromRingStack;
 
     public ShootingPreloadRingsState(FullRedAuto fullRedAuto, Pose2d previous) {
         this.fullRedAuto = fullRedAuto;
@@ -22,22 +21,10 @@ public class ShootingPreloadRingsState extends State {
 
     @Override
     public void onEntry(@Nullable State previousState) {
-        if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
-            backUpFromRingStack = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToLinearHeading(new Pose2d(-35.0, -38.0, 0))
-                    .addDisplacementMarker(() -> {
-                        fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
-                        done = true;
-                    })
-                    .build();
-        }
+        fullRedAuto.getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
         fullRedAuto.setShooterEnabled(true);
         fullRedAuto.handleLift(1, true, () -> {
-            if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
-                fullRedAuto.getDrive().followTrajectoryAsync(backUpFromRingStack);
-            } else {
-                done = true;
-            }
+           done = true;
             System.out.println("Shooting preload ring finished");
         });
     }

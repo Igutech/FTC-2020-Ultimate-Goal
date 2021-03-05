@@ -32,8 +32,7 @@ public class MoveAwayFromTargetZone extends State {
             moveAwayFromTargetZone = moveAwayFromRedB;
         } else {
             Trajectory moveAwayFromRedC = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .splineToConstantHeading(new Vector2d(50, -40), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(20, -40), Math.toRadians(0.0))
+                    .lineToLinearHeading(new Pose2d(35.0,-50.0,Math.toRadians(90.0)))
                     .addDisplacementMarker(() -> done = true)
                     .build();
             moveAwayFromTargetZone = moveAwayFromRedC;
@@ -50,7 +49,7 @@ public class MoveAwayFromTargetZone extends State {
     State getNextState() {
         if (done) {
             if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
-                return new Park(fullRedAuto, moveAwayFromTargetZone.end());
+                return new GoToSecondWobbleGoal(fullRedAuto, moveAwayFromTargetZone.end());
             }
             return new GoToRingStack(fullRedAuto, moveAwayFromTargetZone.end());
         } else {

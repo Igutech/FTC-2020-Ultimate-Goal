@@ -22,8 +22,8 @@ public class GoToSecondWobbleGoal extends State {
                     .addDisplacementMarker(() -> done = true)
                     .build();
             moveToSecondWobbleGoal = moveToWobbleGoalA;
-        } else {
-            Trajectory moveToSecondWobbleGoalBC = fullRedAuto.getDrive().trajectoryBuilder(previous)
+        } else if(fullRedAuto.getHeight()== UGContourRingPipeline.Height.ONE){
+            Trajectory moveToSecondWobbleGoalB = fullRedAuto.getDrive().trajectoryBuilder(previous)
                     .addDisplacementMarker(3, () -> {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
@@ -31,7 +31,17 @@ public class GoToSecondWobbleGoal extends State {
                     .splineToLinearHeading(new Pose2d(-35.0, -30.0, Math.toRadians(0.0)), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
-            moveToSecondWobbleGoal = moveToSecondWobbleGoalBC;
+            moveToSecondWobbleGoal = moveToSecondWobbleGoalB;
+        } else {
+            Trajectory moveToSecondWobbleGoalC = fullRedAuto.getDrive().trajectoryBuilder(previous)
+                    .addDisplacementMarker(3, () -> {
+                        fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
+                        fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
+                    })
+                    .lineToLinearHeading(new Pose2d(-43.0, -25.0, Math.toRadians(0.0)))
+                    .addDisplacementMarker(() -> done = true)
+                    .build();
+            moveToSecondWobbleGoal = moveToSecondWobbleGoalC;
         }
     }
 
