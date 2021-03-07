@@ -35,7 +35,7 @@ public class PrepareToShootState extends State {
                     })
                     .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
                     .splineToConstantHeading(new Vector2d(-10.0, -20.0), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(-10.0, -45), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(-10.0, -43), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
         } else {
