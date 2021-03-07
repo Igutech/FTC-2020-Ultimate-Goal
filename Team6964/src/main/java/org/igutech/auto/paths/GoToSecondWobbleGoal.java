@@ -38,7 +38,7 @@ public class GoToSecondWobbleGoal extends State {
                         fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
                         fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
                     })
-                    .lineToLinearHeading(new Pose2d(-43.0, -25.0, Math.toRadians(0.0)))
+                    .lineToLinearHeading(new Pose2d(0.0, -25.0, Math.toRadians(0.0)))
                     .addDisplacementMarker(() -> done = true)
                     .build();
             moveToSecondWobbleGoal = moveToSecondWobbleGoalC;

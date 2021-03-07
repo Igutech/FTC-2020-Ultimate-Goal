@@ -31,7 +31,7 @@ public class Park extends State {
                     .build();
         } else {
             park = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToConstantHeading(new Vector2d(45, -10))
+                    .lineToLinearHeading(new Pose2d(-10, -10,Math.toRadians(90)))
                     .addDisplacementMarker(() -> done = true)
                     .build();
         }
