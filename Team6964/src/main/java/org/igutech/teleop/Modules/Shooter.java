@@ -24,25 +24,16 @@ public class Shooter extends Module {
     public static double frontShooterkD = 0.0;
     public static double frontShooterkF = 0.;
 
-    public static double backShooterkP = 0.0032;
-    public static double backShooterkI = 0.00145;
-    public static double backShooterkD = 0.00;
-    public static double backShooterkF = 0.0;
 
     public static double frontShooterTargetVelo = -1400;
-    public static double backShooterTargetVelo = -1080;
-    //public static double backShooterTargetVelo = -1030;
     public static double frontShooterPowershotVelo = -1200;
-    public static double backShooterPowershotVelo = -1100;
     private PIDFController frontShooterController;
-    private PIDFController backShooterController;
     private boolean veloControlActive = false;
     private ButtonToggle highGoalToggle;
     private ButtonToggle powershotToggle;
 
     private boolean wasPidRunning;
     private DcMotorEx frontShooterMotor;
-    private DcMotorEx backShooterMotor;
     private boolean inTeleop;
     private boolean enableShooter = false;
     private ShooterState shooterState = ShooterState.OFF;
@@ -56,30 +47,23 @@ public class Shooter extends Module {
     @Override
     public void init() {
         frontShooterController = new PIDFController(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
-        backShooterController = new PIDFController(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
         if (inTeleop) {
             gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
             highGoalToggle = new ButtonToggle(1, "right_bumper", () -> {
                 frontShooterController.init();
-                backShooterController.init();
             }, () -> {
                 frontShooterController.init();
-                backShooterController.init();
             });
             highGoalToggle.init();
             powershotToggle = new ButtonToggle(1, "b", () -> {
                 frontShooterController.init();
-                backShooterController.init();
             }, () -> {
                 frontShooterController.init();
-                backShooterController.init();
             });
             powershotToggle.init();
         }
         frontShooterMotor = ((DcMotorEx) hardware.getMotors().get("frontshooter"));
-        backShooterMotor = ((DcMotorEx) hardware.getMotors().get("backshooter"));
-
     }
 
     @Override
@@ -121,30 +105,21 @@ public class Shooter extends Module {
             }
             if (!wasPidRunning) {
                 frontShooterController.init();
-                backShooterController.init();
             }
             frontShooterController.updateSetpoint(frontShooterTargetVelo);
-            backShooterController.updateSetpoint(backShooterTargetVelo);
             double frontShooterPower = frontShooterController.update(frontShooterMotor.getVelocity());
-            double backShooterPower = backShooterController.update(backShooterMotor.getVelocity());
 
             hardware.getMotors().get("frontshooter").setPower(frontShooterPower);
-            hardware.getMotors().get("backshooter").setPower(backShooterPower);
 
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
-            dashboardTelemetry.addData("backShooterPower", backShooterPower);
         } else if (shooterState == ShooterState.POWERSHOT) {
             if (!wasPidRunning) {
                 frontShooterController.init();
-                backShooterController.init();
             }
             frontShooterController.updateSetpoint(frontShooterPowershotVelo);
-            backShooterController.updateSetpoint(backShooterPowershotVelo);
             double frontShooterPower = frontShooterController.update(frontShooterMotor.getVelocity());
-            double backShooterPower = backShooterController.update(backShooterMotor.getVelocity());
 
             hardware.getMotors().get("frontshooter").setPower(frontShooterPower);
-            hardware.getMotors().get("backshooter").setPower(backShooterPower);
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else {
             wasPidRunning = false;
@@ -154,12 +129,9 @@ public class Shooter extends Module {
 
         dashboardTelemetry.addData("manualPower", manualPower);
         dashboardTelemetry.addData("Target frontShooter Velo", frontShooterTargetVelo);
-        dashboardTelemetry.addData("Target backShooter Velo", backShooterTargetVelo);
         dashboardTelemetry.addData("Front Shooter Velo", frontShooterMotor.getVelocity());
-        dashboardTelemetry.addData("Back Shooter Velo", backShooterMotor.getVelocity());
         dashboardTelemetry.addData("PID Active ", veloControlActive);
         dashboardTelemetry.addData("Front P ", frontShooterController.getkP());
-        dashboardTelemetry.addData("Back P ", backShooterController.getkP());
         if(inTeleop){
             dashboardTelemetry.update();
         }
