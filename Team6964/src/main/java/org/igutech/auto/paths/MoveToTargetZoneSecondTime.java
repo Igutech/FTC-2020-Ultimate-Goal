@@ -47,7 +47,7 @@ public class MoveToTargetZoneSecondTime extends State {
     @Override
     public State getNextState() {
         if (done) {
-            return new Park(fullRedAuto, previous);
+            return new Park(fullRedAuto, moveToTargetZone.end());
         } else {
             return null;
         }
