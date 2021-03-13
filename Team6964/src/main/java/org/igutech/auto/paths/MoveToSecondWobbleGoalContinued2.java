@@ -19,12 +19,12 @@ public class MoveToSecondWobbleGoalContinued2 extends State {
         this.fullRedAuto = fullRedAuto;
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
             moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToConstantHeading(new Vector2d(-44.5, -38.5))
+                    .lineToLinearHeading(new Pose2d(-43, -38,Math.toRadians(0)))
                     .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
                     .build();
         } else {
             moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                    .lineToConstantHeading(new Vector2d(-44.5, -37))
+                    .lineToConstantHeading(new Vector2d(-44.5, -38))
                     .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
                     .build();
         }

@@ -116,7 +116,7 @@ public class FullRedAuto extends LinearOpMode {
         if (justStarted) {
             timerService.registerUniqueTimerEvent(1200, "handleLift", () -> increase(callback));
         } else {
-            timerService.registerUniqueTimerEvent(500, "handleLift", () -> increase(callback));
+            timerService.registerUniqueTimerEvent(300, "handleLift", () -> increase(callback));
         }
     }
 
@@ -136,8 +136,6 @@ public class FullRedAuto extends LinearOpMode {
             callback.call();
             shooter.setShooterStatus(false);
             System.out.println("Index ending");
-            timerService.registerUniqueTimerEvent(600, "IndexLift", () -> {
-            });
         }
     }
 
@@ -164,9 +162,9 @@ public class FullRedAuto extends LinearOpMode {
 
     public void dropWobbleGoal(Callback callback) {
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
-        timerService.registerUniqueTimerEvent(700, "Wobble", () -> {
+        timerService.registerUniqueTimerEvent(600, "Wobble", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-            timerService.registerUniqueTimerEvent(400, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
                 callback.call();
 
             });
@@ -175,7 +173,7 @@ public class FullRedAuto extends LinearOpMode {
 
     public void grabWobbleGoal(Callback callback) {
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
-        timerService.registerUniqueTimerEvent(700, "Wobble Servo", () -> {
+        timerService.registerUniqueTimerEvent(50, "Wobble Servo", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
             timerService.registerUniqueTimerEvent(250, "Wobble Servo", () -> {
                 hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
