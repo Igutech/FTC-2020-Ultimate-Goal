@@ -41,7 +41,7 @@ public class Teleop extends OpMode {
         modules.add(new DriveTrain());
         modules.add(new ThreeWheelOdometry());
         modules.add(new Shooter(hardware, true));
-        modules.add(new Intake());
+        //modules.add(new Intake());
         modules.add(new Index(hardware, timerService, true));
         modules.add(new WobbleGoalGrabber());
 
@@ -170,11 +170,11 @@ public class Teleop extends OpMode {
             for (Module m : modules) {
                 if (m.isEnabled()) m.loop();
             }
-            long diff = System.nanoTime() - nanos;
-            if (diff < 5000000L)
-                Thread.sleep((int) ((5000000 - diff) / 1000000));
+//            long diff = System.nanoTime() - nanos;
+//            if (diff < 5000000L)
+//                Thread.sleep((int) ((5000000 - diff) / 1000000));
             loops++;
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
