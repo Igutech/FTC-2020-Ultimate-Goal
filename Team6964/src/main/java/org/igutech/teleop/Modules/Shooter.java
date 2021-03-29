@@ -64,7 +64,7 @@ public class Shooter extends Module {
             });
             powershotToggle.init();
         }
-        frontShooterMotor = ((DcMotorEx) hardware.getMotors().get("intake2"));
+        frontShooterMotor = ((DcMotorEx) hardware.getMotors().get("shooter"));
     }
 
     @Override
@@ -95,7 +95,7 @@ public class Shooter extends Module {
 
         if (shooterState == ShooterState.MANUAL) {
             wasPidRunning = false;
-            hardware.getMotors().get("intake2").setPower(-manualPower);
+            hardware.getMotors().get("shooter").setPower(-manualPower);
         } else if (shooterState == ShooterState.HIGH_GOAL) {
             if(inTeleop){
                 if (powershotToggle.getState()) {
@@ -108,7 +108,7 @@ public class Shooter extends Module {
             frontShooterController.updateSetpoint(frontShooterTargetVelo);
             double frontShooterPower = frontShooterController.update(frontShooterMotor.getVelocity());
 
-            hardware.getMotors().get("intake2").setPower(frontShooterPower);
+            hardware.getMotors().get("shooter").setPower(frontShooterPower);
 
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else if (shooterState == ShooterState.POWERSHOT) {
@@ -118,11 +118,11 @@ public class Shooter extends Module {
             frontShooterController.updateSetpoint(frontShooterPowershotVelo);
             double frontShooterPower = frontShooterController.update(frontShooterMotor.getVelocity());
 
-            hardware.getMotors().get("intake2").setPower(frontShooterPower);
+            hardware.getMotors().get("shooter").setPower(frontShooterPower);
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else {
             wasPidRunning = false;
-            hardware.getMotors().get("intake2").setPower(0.0);
+            hardware.getMotors().get("shooter").setPower(0.0);
         }
 
         dashboardTelemetry.addData("manualPower", manualPower);

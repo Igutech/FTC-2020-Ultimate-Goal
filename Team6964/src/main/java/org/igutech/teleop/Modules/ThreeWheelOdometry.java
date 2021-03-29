@@ -48,6 +48,7 @@ public class ThreeWheelOdometry extends Module {
         myPose = new Pose2d(myPose.getX() + offset.getX(), myPose.getY() + offset.getY(), getHeading());
 
         prevheading = getHeading();
+        Teleop.getInstance().telemetry.addData("Current pose",myPose.toString());
 
     }
 
