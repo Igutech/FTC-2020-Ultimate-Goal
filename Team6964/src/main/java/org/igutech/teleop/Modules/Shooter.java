@@ -130,8 +130,6 @@ public class Shooter extends Module {
         dashboardTelemetry.addData("Front Shooter Velo", frontShooterMotor.getVelocity());
         dashboardTelemetry.addData("PID Active ", veloControlActive);
         dashboardTelemetry.addData("Front P ", frontShooterController.getkP());
-        Teleop.getInstance().telemetry.addData("Front Shooter Velo", frontShooterMotor.getVelocity());
-        System.out.println(frontShooterMotor.getVelocity()+" velocity");
         dashboardTelemetry.update();
 
         if(inTeleop){
