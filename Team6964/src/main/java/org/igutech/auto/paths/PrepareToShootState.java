@@ -48,7 +48,7 @@ public class PrepareToShootState extends State {
                     .addDisplacementMarker(() -> redAutoInstance.getDrive().followTrajectoryAsync(prepareToShoot2))
                     .build();
             prepareToShoot2 = redAutoInstance.getDrive().trajectoryBuilder(prepareToShoot.end())
-                    .lineToLinearHeading(new Pose2d(-37, -38, Math.toRadians(-4)))
+                    .lineToLinearHeading(new Pose2d(-37, -38, Math.toRadians(-2)))
                     .addDisplacementMarker(() -> {
                         done = true;
                         System.out.println("Prepare to shoot callback ended");
