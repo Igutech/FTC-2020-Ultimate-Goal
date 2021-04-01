@@ -12,6 +12,7 @@ import org.igutech.auto.roadrunner.SampleMecanumDrive;
 import dev.raneri.statelib.StateLibrary;
 
 import org.igutech.config.Hardware;
+import org.igutech.teleop.Modules.Index;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
 import org.igutech.utils.events.Callback;
@@ -30,30 +31,25 @@ public class FullRedAuto extends LinearOpMode {
     }
 
     private boolean isShooterEnabled = false;
-    private int currentShooterServoLevel = 1;
-    private HashMap<Integer, Double> liftPositions;
     private TimerService timerService;
     private SampleMecanumDrive drive;
     private Shooter shooter;
     private UGContourRingPipeline.Height height;
+    private Index index;
 
     @Override
     public void runOpMode() throws InterruptedException {
 
         hardware = new Hardware(hardwareMap);
         hardware.getServos().get("wobbleGoalServo").setPosition(0.47);
-        hardware.getServos().get("shooterServo").setPosition(0.1);
-        // hardware.getServos().get("wobbleGoalLift").setPosition(0.15);
+        hardware.getServos().get("shooterServo1").setPosition(0.21);
+        hardware.getServos().get("shooterServo2").setPosition(0.46);
+        hardware.getServos().get("liftServo").setPosition(0.86);
 
-        liftPositions = new HashMap<>();
-        liftPositions.put(0, 0.78);
-        liftPositions.put(1, 0.65);
-        liftPositions.put(2, 0.59);
-        liftPositions.put(3, 0.5);
-
-
-        shooter = new Shooter(hardware, false);
         timerService = new TimerService();
+        index = new Index(hardware,timerService,false);
+        shooter = new Shooter(hardware, false,index);
+        shooter.frontShooterTargetVelo = -1650;
         drive = new SampleMecanumDrive(hardwareMap,false);
         Pose2d startPose = new Pose2d(-63, -35, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
@@ -88,7 +84,6 @@ public class FullRedAuto extends LinearOpMode {
 
         }
 
-        //waitForStart();
         timerService.start();
         if (isStopRequested()) return;
         transitioner.init(new PrepareToShootState(this, startPose));
@@ -110,63 +105,39 @@ public class FullRedAuto extends LinearOpMode {
 
     public void handleLift(int level, boolean justStarted, Callback callback) {
         shooter.setShooterStatus(true);
-        currentShooterServoLevel = level;
-        hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-        System.out.println("Lift set to " + liftPositions.get(currentShooterServoLevel));
-        if (justStarted) {
-            timerService.registerUniqueTimerEvent(1200, "handleLift", () -> increase(callback));
-        } else {
-            timerService.registerUniqueTimerEvent(300, "handleLift", () -> increase(callback));
-        }
+        index.setIndexStatus(true);
+        timerService.registerUniqueTimerEvent(1000,"Lift",()->{
+            int time = 0;
+            for (int i = 0; i < 2; i++) {
+                timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(true));
+                time += 400;
+                timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(false));
+                time += 400;
+            }
+            time+=425;
+            timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(true));
+            time+=150;
+            timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(false));
+            time+=150;
+            timerService.registerSingleTimerEvent(time, () -> {
+                hardware.getServos().get("liftServo").setPosition(0.86);
+                index.setIndexStatus(false);
+                shooter.setShooterStatus(false);
+                callback.call();
+            });
+        });
     }
 
-    public void isAtMaxLevel(Callback callback) {
-        currentShooterServoLevel++;
-        if (currentShooterServoLevel > 3) {
-            isShooterEnabled = false;
-        }
-        if (isShooterEnabled) {
-            timerService.registerUniqueTimerEvent(300, "IndexLift", () -> {
-                handleLift(currentShooterServoLevel, false, callback);
-            });
-        } else {
-            currentShooterServoLevel = 0;
-            System.out.println("Lift set to " + liftPositions.get(currentShooterServoLevel));
-            hardware.getServos().get("liftServo").setPosition(liftPositions.get(currentShooterServoLevel));
-            callback.call();
-            shooter.setShooterStatus(false);
-            System.out.println("Index ending");
-        }
-    }
 
-    public void increase(Callback callback) {
-        if (currentShooterServoLevel == 0) {
-            timerService.registerUniqueTimerEvent(600, "Index Increase", () -> {
-                System.out.println("testing");
-            });
-        } else if (currentShooterServoLevel == 1) {
-            hardware.getServos().get("shooterServo").setPosition(0.32);
-            timerService.registerUniqueTimerEvent(400, "Index Increase", () -> {
-                hardware.getServos().get("shooterServo").setPosition(0.1);
-                isAtMaxLevel(callback);
 
-            });
-        } else {
-            hardware.getServos().get("shooterServo").setPosition(0.32);
-            timerService.registerUniqueTimerEvent(400, "Index Increase", () -> {
-                hardware.getServos().get("shooterServo").setPosition(0.1);
-                isAtMaxLevel(callback);
-            });
-        }
-    }
+
 
     public void dropWobbleGoal(Callback callback) {
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
-        timerService.registerUniqueTimerEvent(600, "Wobble", () -> {
+        timerService.registerUniqueTimerEvent(1500, "Wobble", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-            timerService.registerUniqueTimerEvent(300, "Wobble", () -> {
+            timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
                 callback.call();
-
             });
         });
     }
