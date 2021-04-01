@@ -54,7 +54,7 @@ public class FullRedAuto extends LinearOpMode {
 
         shooter = new Shooter(hardware, false);
         timerService = new TimerService();
-        drive = new SampleMecanumDrive(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap,false);
         Pose2d startPose = new Pose2d(-63, -35, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 

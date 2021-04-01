@@ -39,7 +39,7 @@ public class Teleop extends OpMode {
     private void registerModules() {
 
         modules.add(new DriveTrain());
-        modules.add(new ThreeWheelOdometry());
+       // modules.add(new ThreeWheelOdometry());
         modules.add(new Shooter(hardware, true));
         modules.add(new Intake());
         modules.add(new Index(hardware, timerService, true));

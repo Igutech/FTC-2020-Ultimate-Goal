@@ -19,7 +19,7 @@ public class ThreeWheelOdometry extends Module {
 
     @Override
     public void init() {
-        drive = new SampleMecanumDrive(Teleop.getInstance().getHardware().getHardwareMap());
+        drive = new SampleMecanumDrive(Teleop.getInstance().getHardware().getHardwareMap(),true);
     }
 
     @Override
