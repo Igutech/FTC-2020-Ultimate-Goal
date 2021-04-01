@@ -34,7 +34,6 @@ public class Intake extends Module {
     @Override
     public void start() {
         Teleop.getInstance().getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
-
     }
 
     @Override
@@ -43,9 +42,6 @@ public class Intake extends Module {
         if (power > 0.1) {
             Index index = (Index) Teleop.getInstance().getModuleByName("Index");
             if (index.getIndexStatus()) {
-                Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(0.86);
-                Teleop.getInstance().getHardware().getServos().get("shooterServo1").setPosition(0.21);
-                Teleop.getInstance().getHardware().getServos().get("shooterServo2").setPosition(0.46);
                 index.setIndexStatus(false);
             }
             power = -1;

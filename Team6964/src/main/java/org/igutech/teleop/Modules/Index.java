@@ -27,9 +27,11 @@ public class Index extends Module {
             gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
             shootToggle = new ButtonToggle(1, "left_bumper", () -> {
-                handleLift();
+                hardware.getServos().get("liftServo").setPosition(0.54);
+                isIndexUp = true;
             }, () -> {
-                handleLift();
+                hardware.getServos().get("liftServo").setPosition(0.86);
+                isIndexUp = false;
             });
 
             shooterServoToggle = new ButtonToggle(1, "y", () -> {
@@ -39,7 +41,6 @@ public class Index extends Module {
             }, () -> {
                 hardware.getServos().get("shooterServo1").setPosition(0.21);
                 hardware.getServos().get("shooterServo2").setPosition(0.46);
-
             });
 
 
@@ -64,25 +65,21 @@ public class Index extends Module {
         }
     }
 
-    public void handleLift() {
-
-        if (shootToggle.getState()) {
-            hardware.getServos().get("liftServo").setPosition(0.54);
-            isIndexUp = true;
-        } else {
-            hardware.getServos().get("liftServo").setPosition(0.86);
-            isIndexUp = false;
-        }
-
-    }
-
-
     public boolean getIndexStatus() {
         return isIndexUp;
     }
 
 
-    public void setIndexStatus(boolean shooterIsUp) {
-        this.isIndexUp = shooterIsUp;
+    public void setIndexStatus(boolean indexStatus) {
+        if (indexStatus) {
+            hardware.getServos().get("shooterServo1").setPosition(0.43);
+            hardware.getServos().get("shooterServo2").setPosition(0.23);
+            hardware.getServos().get("liftServo").setPosition(0.54);
+        } else {
+            hardware.getServos().get("shooterServo1").setPosition(0.21);
+            hardware.getServos().get("shooterServo2").setPosition(0.46);
+            hardware.getServos().get("liftServo").setPosition(0.86);
+        }
+        isIndexUp = indexStatus;
     }
 }
