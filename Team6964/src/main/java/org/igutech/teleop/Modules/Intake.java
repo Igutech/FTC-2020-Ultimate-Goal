@@ -34,7 +34,6 @@ public class Intake extends Module {
     @Override
     public void start() {
         Teleop.getInstance().getHardware().getServos().get("releaseLiftServo").setPosition(0.2);
-
     }
 
     @Override
@@ -42,9 +41,8 @@ public class Intake extends Module {
         double power = gamepadService.getAnalog(1, "left_trigger");
         if (power > 0.1) {
             Index index = (Index) Teleop.getInstance().getModuleByName("Index");
-            if (index.getCurrentShooterServoLevel() != 0) {
-                Teleop.getInstance().getHardware().getServos().get("liftServo").setPosition(0.78);
-                index.setCurrentShooterServoLevel(0);
+            if (index.getIndexStatus()) {
+                index.setIndexStatus(false);
             }
             power = -1;
         }

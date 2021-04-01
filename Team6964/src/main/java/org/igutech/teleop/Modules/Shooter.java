@@ -2,6 +2,7 @@ package org.igutech.teleop.Modules;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -24,28 +25,20 @@ public class Shooter extends Module {
     public static double frontShooterkD = 0.0;
     public static double frontShooterkF = 0.;
 
-    public static double backShooterkP = 0.0032;
-    public static double backShooterkI = 0.00145;
-    public static double backShooterkD = 0.00;
-    public static double backShooterkF = 0.0;
 
-    public static double frontShooterTargetVelo = -1400;
-    public static double backShooterTargetVelo = -1080;
-    //public static double backShooterTargetVelo = -1030;
-    public static double frontShooterPowershotVelo = -1200;
-    public static double backShooterPowershotVelo = -1100;
+    public static double frontShooterTargetVelo = -1500;
+    public static double frontShooterPowershotVelo = -1350;
     private PIDFController frontShooterController;
-    private PIDFController backShooterController;
     private boolean veloControlActive = false;
     private ButtonToggle highGoalToggle;
     private ButtonToggle powershotToggle;
 
     private boolean wasPidRunning;
     private DcMotorEx frontShooterMotor;
-    private DcMotorEx backShooterMotor;
     private boolean inTeleop;
     private boolean enableShooter = false;
     private ShooterState shooterState = ShooterState.OFF;
+    private Index index;
 
     public Shooter(Hardware hardware, boolean inTeleop) {
         super(500, "Shooter");
@@ -56,30 +49,28 @@ public class Shooter extends Module {
     @Override
     public void init() {
         frontShooterController = new PIDFController(frontShooterkP, frontShooterkI, frontShooterkD, frontShooterkF);
-        backShooterController = new PIDFController(backShooterkP, backShooterkI, backShooterkD, backShooterkF);
         if (inTeleop) {
             gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
             highGoalToggle = new ButtonToggle(1, "right_bumper", () -> {
                 frontShooterController.init();
-                backShooterController.init();
             }, () -> {
                 frontShooterController.init();
-                backShooterController.init();
             });
             highGoalToggle.init();
             powershotToggle = new ButtonToggle(1, "b", () -> {
                 frontShooterController.init();
-                backShooterController.init();
             }, () -> {
                 frontShooterController.init();
-                backShooterController.init();
             });
             powershotToggle.init();
         }
-        frontShooterMotor = ((DcMotorEx) hardware.getMotors().get("frontshooter"));
-        backShooterMotor = ((DcMotorEx) hardware.getMotors().get("backshooter"));
+        frontShooterMotor = ((DcMotorEx) hardware.getMotors().get("shooter"));
+    }
 
+    @Override
+    public void start() {
+        index = (Index) Teleop.getInstance().getModuleByName("Index");
     }
 
     @Override
@@ -92,8 +83,7 @@ public class Shooter extends Module {
             manualPower = gamepadService.getAnalog(2, "right_trigger");
             if (Math.abs(manualPower) != 0.0) {
                 wasPidRunning = false;
-                hardware.getMotors().get("frontshooter").setPower(-manualPower);
-                hardware.getMotors().get("backshooter").setPower(-manualPower);
+                shooterState = ShooterState.MANUAL;
             } else if (highGoalToggle.getState()) {
                 shooterState = ShooterState.HIGH_GOAL;
             } else if (powershotToggle.getState()) {
@@ -111,65 +101,57 @@ public class Shooter extends Module {
 
         if (shooterState == ShooterState.MANUAL) {
             wasPidRunning = false;
-            hardware.getMotors().get("frontshooter").setPower(-manualPower);
-            hardware.getMotors().get("backshooter").setPower(-manualPower);
+            hardware.getMotors().get("shooter").setPower(-manualPower);
         } else if (shooterState == ShooterState.HIGH_GOAL) {
-            if(inTeleop){
+            if (inTeleop) {
                 if (powershotToggle.getState()) {
                     powershotToggle.setState(false);
                 }
             }
             if (!wasPidRunning) {
                 frontShooterController.init();
-                backShooterController.init();
             }
             frontShooterController.updateSetpoint(frontShooterTargetVelo);
-            backShooterController.updateSetpoint(backShooterTargetVelo);
             double frontShooterPower = frontShooterController.update(frontShooterMotor.getVelocity());
-            double backShooterPower = backShooterController.update(backShooterMotor.getVelocity());
 
-            hardware.getMotors().get("frontshooter").setPower(frontShooterPower);
-            hardware.getMotors().get("backshooter").setPower(backShooterPower);
+            hardware.getMotors().get("shooter").setPower(frontShooterPower);
+            index.setIndexStatus(true);
+            index.setPowershot(false);
 
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
-            dashboardTelemetry.addData("backShooterPower", backShooterPower);
         } else if (shooterState == ShooterState.POWERSHOT) {
             if (!wasPidRunning) {
                 frontShooterController.init();
-                backShooterController.init();
             }
             frontShooterController.updateSetpoint(frontShooterPowershotVelo);
-            backShooterController.updateSetpoint(backShooterPowershotVelo);
             double frontShooterPower = frontShooterController.update(frontShooterMotor.getVelocity());
-            double backShooterPower = backShooterController.update(backShooterMotor.getVelocity());
 
-            hardware.getMotors().get("frontshooter").setPower(frontShooterPower);
-            hardware.getMotors().get("backshooter").setPower(backShooterPower);
+            hardware.getMotors().get("shooter").setPower(frontShooterPower);
+            index.setIndexStatus(true);
+            index.setPowershot(true);
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else {
             wasPidRunning = false;
-            hardware.getMotors().get("frontshooter").setPower(0.0);
-            hardware.getMotors().get("backshooter").setPower(0.0);
+            hardware.getMotors().get("shooter").setPower(0.0);
         }
 
         dashboardTelemetry.addData("manualPower", manualPower);
         dashboardTelemetry.addData("Target frontShooter Velo", frontShooterTargetVelo);
-        dashboardTelemetry.addData("Target backShooter Velo", backShooterTargetVelo);
         dashboardTelemetry.addData("Front Shooter Velo", frontShooterMotor.getVelocity());
-        dashboardTelemetry.addData("Back Shooter Velo", backShooterMotor.getVelocity());
         dashboardTelemetry.addData("PID Active ", veloControlActive);
         dashboardTelemetry.addData("Front P ", frontShooterController.getkP());
-        dashboardTelemetry.addData("Back P ", backShooterController.getkP());
-        if(inTeleop){
+        dashboardTelemetry.update();
+
+        if (inTeleop) {
             dashboardTelemetry.update();
         }
-        if(inTeleop){
+        if (inTeleop) {
             if (highGoalToggle.getState() || powershotToggle.getState()) {
                 wasPidRunning = true;
             }
-        }else{
-            if(shooterState==ShooterState.HIGH_GOAL){
-                wasPidRunning=true;
+        } else {
+            if (shooterState == ShooterState.HIGH_GOAL) {
+                wasPidRunning = true;
             }
         }
 

@@ -32,15 +32,16 @@ public class Hardware {
         motors.put("frontright", hardwareMap.dcMotor.get("frontright"));
         motors.put("backleft", hardwareMap.dcMotor.get("backleft"));
         motors.put("backright", hardwareMap.dcMotor.get("backright"));
-        motors.put("frontshooter", hardwareMap.dcMotor.get("frontshooter"));
-        motors.put("backshooter", hardwareMap.dcMotor.get("backshooter"));
+        motors.put("shooter", hardwareMap.dcMotor.get("shooter"));
+
         motors.put("intake", hardwareMap.dcMotor.get("intake"));
         motors.put("intake2", hardwareMap.dcMotor.get("intake2"));
 
         //CRservos.put("intakeServo",hardwareMap.crservo.get("intakeServo"));
 
         servos.put("liftServo",hardwareMap.servo.get("liftServo"));
-        servos.put("shooterServo",hardwareMap.servo.get("shooterServo"));
+        servos.put("shooterServo1",hardwareMap.servo.get("shooterServo1"));
+        servos.put("shooterServo2",hardwareMap.servo.get("shooterServo2"));
         servos.put("releaseLiftServo",hardwareMap.servo.get("releaseLiftServo"));
         servos.put("wobbleGoalLift",hardwareMap.servo.get("wobbleGoalLift"));
         servos.put("wobbleGoalServo",hardwareMap.servo.get("wobbleGoalServo"));
