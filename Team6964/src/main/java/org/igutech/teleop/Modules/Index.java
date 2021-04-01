@@ -26,21 +26,12 @@ public class Index extends Module {
         if (isTeleop) {
             gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
-            shootToggle = new ButtonToggle(1, "left_bumper", () -> {
-                hardware.getServos().get("liftServo").setPosition(0.54);
-                isIndexUp = true;
-            }, () -> {
-                hardware.getServos().get("liftServo").setPosition(0.86);
-                isIndexUp = false;
-            });
+            shootToggle = new ButtonToggle(1, "left_bumper", this::shootRings, this::shootRings);
 
             shooterServoToggle = new ButtonToggle(1, "y", () -> {
-                hardware.getServos().get("shooterServo1").setPosition(0.43);
-                hardware.getServos().get("shooterServo2").setPosition(0.23);
-
+                setIndexServoStatus(true);
             }, () -> {
-                hardware.getServos().get("shooterServo1").setPosition(0.21);
-                hardware.getServos().get("shooterServo2").setPosition(0.46);
+                setIndexServoStatus(false);
             });
 
 
@@ -72,8 +63,6 @@ public class Index extends Module {
 
     public void setIndexStatus(boolean indexStatus) {
         if (indexStatus) {
-            hardware.getServos().get("shooterServo1").setPosition(0.43);
-            hardware.getServos().get("shooterServo2").setPosition(0.23);
             hardware.getServos().get("liftServo").setPosition(0.54);
         } else {
             hardware.getServos().get("shooterServo1").setPosition(0.21);
@@ -81,5 +70,27 @@ public class Index extends Module {
             hardware.getServos().get("liftServo").setPosition(0.86);
         }
         isIndexUp = indexStatus;
+    }
+
+    public void setIndexServoStatus(boolean servoStatus) {
+        if (servoStatus) {
+            hardware.getServos().get("shooterServo1").setPosition(0.43);
+            hardware.getServos().get("shooterServo2").setPosition(0.23);
+        } else {
+            hardware.getServos().get("shooterServo1").setPosition(0.21);
+            hardware.getServos().get("shooterServo2").setPosition(0.46);
+        }
+    }
+
+    private void shootRings() {
+        int time = 0;
+        for (int i = 0; i < 3; i++) {
+            timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(true));
+            time += 500;
+            timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(false));
+            time += 500;
+        }
+        timerService.registerSingleTimerEvent(time, () -> hardware.getServos().get("liftServo").setPosition(0.86));
+
     }
 }

@@ -17,7 +17,6 @@ public class TimerService extends Service {
     private long startTime;
 
     private ArrayList<RepeatedTimerEvent> repeatedTimerEvents = new ArrayList<>();
-    private Queue<SingleTimerEvent> singleEventQueue = new LinkedList<>();
     private ArrayList<SingleTimerEvent> singleEvents = new ArrayList<>();
 
     private Set<SingleTimerEvent> uniqueEventSet = new HashSet<>();
@@ -46,7 +45,7 @@ public class TimerService extends Service {
 
             SingleTimerEvent e = iterator.next();
             if (System.currentTimeMillis() >= e.getTime()) {
-                System.out.println(e.getName()+" Firing");
+                System.out.println(e.getName() + " Firing");
                 try {
                     e.fire();
                 } catch (Exception error) {
@@ -55,6 +54,22 @@ public class TimerService extends Service {
                 iterator.remove();
             }
         }
+
+        iterator = singleEvents.iterator();
+        while (iterator.hasNext()) {
+
+            SingleTimerEvent e = iterator.next();
+            if (System.currentTimeMillis() >= e.getTime()) {
+                System.out.println(e.getName() + " Firing");
+                try {
+                    e.fire();
+                } catch (Exception error) {
+                    error.printStackTrace();
+                }
+                iterator.remove();
+            }
+        }
+
 
         for (RepeatedTimerEvent e : repeatedTimerEvents) {
             if (current >= e.getTime()) {
@@ -71,10 +86,7 @@ public class TimerService extends Service {
 
     public void registerSingleTimerEvent(int time, Callback m) {
         SingleTimerEvent event = new SingleTimerEvent(time, m);
-        if (singleEvents.size() > 0) {
-            event.setTime(singleEvents.get(singleEvents.size() - 1).getTime() + time);
-        }
-        singleEventQueue.add(event);
+        singleEvents.add(event);
     }
 
     public void registerRepeatedTimerEvents(int time, Callback m) {
