@@ -32,17 +32,19 @@ public class Teleop extends OpMode {
 
     private ArrayList<Module> modules;
     private TimerService timerService;
+    private Index index;
     private Hardware hardware;
     private ElapsedTime elapsedTime;
     private int loops = 0;
 
     private void registerModules() {
 
+        index = new Index(hardware, timerService, true);
         modules.add(new DriveTrain());
        // modules.add(new ThreeWheelOdometry());
-        modules.add(new Shooter(hardware, true));
+        modules.add(new Shooter(hardware, true,index));
         modules.add(new Intake());
-        modules.add(new Index(hardware, timerService, true));
+        modules.add(index);
         modules.add(new WobbleGoalGrabber());
 
 

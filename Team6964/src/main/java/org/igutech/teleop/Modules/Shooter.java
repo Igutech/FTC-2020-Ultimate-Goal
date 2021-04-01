@@ -40,10 +40,11 @@ public class Shooter extends Module {
     private ShooterState shooterState = ShooterState.OFF;
     private Index index;
 
-    public Shooter(Hardware hardware, boolean inTeleop) {
+    public Shooter(Hardware hardware, boolean inTeleop, Index index) {
         super(500, "Shooter");
         this.hardware = hardware;
         this.inTeleop = inTeleop;
+        this.index = index;
     }
 
     @Override
@@ -68,10 +69,7 @@ public class Shooter extends Module {
         frontShooterMotor = ((DcMotorEx) hardware.getMotors().get("shooter"));
     }
 
-    @Override
-    public void start() {
-        index = (Index) Teleop.getInstance().getModuleByName("Index");
-    }
+
 
     @Override
     public void loop() {
