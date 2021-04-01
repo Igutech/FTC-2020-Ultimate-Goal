@@ -116,6 +116,7 @@ public class Shooter extends Module {
 
             hardware.getMotors().get("shooter").setPower(frontShooterPower);
             index.setIndexStatus(true);
+            index.setPowershot(false);
 
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else if (shooterState == ShooterState.POWERSHOT) {
@@ -127,7 +128,7 @@ public class Shooter extends Module {
 
             hardware.getMotors().get("shooter").setPower(frontShooterPower);
             index.setIndexStatus(true);
-
+            index.setPowershot(true);
             dashboardTelemetry.addData("frontShooterPower", frontShooterPower);
         } else {
             wasPidRunning = false;
