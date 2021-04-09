@@ -25,7 +25,7 @@ public class PrepareToShootState extends State {
                         redAutoInstance.getHardware().getServos().get("wobbleGoalLift").setPosition(0.15);
                     })
                     .splineToConstantHeading(new Vector2d(-60.0, -25), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(-7.0, -40), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(-7.0, -37), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
         } else if (redAutoInstance.getHeight() == UGContourRingPipeline.Height.ONE) {
@@ -34,8 +34,8 @@ public class PrepareToShootState extends State {
                         redAutoInstance.getHardware().getServos().get("wobbleGoalLift").setPosition(0.15);
                     })
                     .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(-10.0, -20.0), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(-10.0, -43), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(-7, -20.0), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(-7.0, -38), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
         } else {
@@ -48,7 +48,7 @@ public class PrepareToShootState extends State {
                     .addDisplacementMarker(() -> redAutoInstance.getDrive().followTrajectoryAsync(prepareToShoot2))
                     .build();
             prepareToShoot2 = redAutoInstance.getDrive().trajectoryBuilder(prepareToShoot.end())
-                    .lineToLinearHeading(new Pose2d(-37, -38, Math.toRadians(-2)))
+                    .lineToLinearHeading(new Pose2d(-35, -38, Math.toRadians(-2)))
                     .addDisplacementMarker(() -> {
                         done = true;
                         System.out.println("Prepare to shoot callback ended");
