@@ -26,7 +26,7 @@ public class Shooter extends Module {
     public static double frontShooterkF = 0.;
 
 
-    public static double frontShooterTargetVelo = -1500;
+    public static double frontShooterTargetVelo = -1800;
     public static double frontShooterPowershotVelo = -1350;
     private PIDFController frontShooterController;
     private boolean veloControlActive = false;
