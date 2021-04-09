@@ -49,7 +49,7 @@ public class FullRedAuto extends LinearOpMode {
         timerService = new TimerService();
         index = new Index(hardware,timerService,false);
         shooter = new Shooter(hardware, false,index);
-        shooter.frontShooterTargetVelo = -1650;
+       // shooter.frontShooterTargetVelo = -1600;
         drive = new SampleMecanumDrive(hardwareMap,false);
         Pose2d startPose = new Pose2d(-63, -35, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
@@ -123,6 +123,7 @@ public class FullRedAuto extends LinearOpMode {
                 hardware.getServos().get("liftServo").setPosition(0.86);
                 index.setIndexStatus(false);
                 shooter.setShooterStatus(false);
+
                 callback.call();
             });
         });
@@ -134,11 +135,11 @@ public class FullRedAuto extends LinearOpMode {
 
     public void dropWobbleGoal(Callback callback) {
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
-        timerService.registerUniqueTimerEvent(1500, "Wobble", () -> {
+        timerService.registerUniqueTimerEvent(900, "Wobble", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
-            timerService.registerUniqueTimerEvent(500, "Wobble", () -> {
+            //timerService.registerUniqueTimerEvent(200, "Wobble", () -> {
                 callback.call();
-            });
+           // });
         });
     }
 
