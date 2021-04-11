@@ -92,6 +92,7 @@ public class FullRedAuto extends LinearOpMode {
         camera.closeCameraDevice();
 
         while (!isStopRequested() && opModeIsActive()) {
+            System.out.println(Shooter.frontShooterTargetVelo);
             transitioner.loop();
             shooter.loop();
             timerService.loop();
@@ -106,6 +107,14 @@ public class FullRedAuto extends LinearOpMode {
     public void handleLift(int level, boolean justStarted, Callback callback) {
         shooter.setShooterStatus(true);
         index.setIndexStatus(true);
+        if(!justStarted){
+            timerService.registerSingleTimerEvent(200,()->{
+                hardware.getServos().get("liftServo").setPosition(0.86);
+            });
+            timerService.registerSingleTimerEvent(400,()->{
+                hardware.getServos().get("liftServo").setPosition(0.54);
+            });
+        }
         timerService.registerUniqueTimerEvent(1000,"Lift",()->{
             int time = 0;
             for (int i = 0; i < 2; i++) {
@@ -116,7 +125,7 @@ public class FullRedAuto extends LinearOpMode {
             }
             time+=425;
             timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(true));
-            time+=150;
+            time+=300;
             timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(false));
             time+=150;
             timerService.registerSingleTimerEvent(time, () -> {

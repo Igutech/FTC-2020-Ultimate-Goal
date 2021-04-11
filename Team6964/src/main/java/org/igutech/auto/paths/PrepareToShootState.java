@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 import org.igutech.auto.FullRedAuto;
 import dev.raneri.statelib.State;
 
+import org.igutech.teleop.Modules.Shooter;
 import org.jetbrains.annotations.Nullable;
 
 public class PrepareToShootState extends State {
@@ -35,7 +36,7 @@ public class PrepareToShootState extends State {
                     })
                     .splineToConstantHeading(new Vector2d(-55.0, -20), Math.toRadians(0.0))
                     .splineToConstantHeading(new Vector2d(-7, -20.0), Math.toRadians(0.0))
-                    .splineToConstantHeading(new Vector2d(-7.0, -38), Math.toRadians(0.0))
+                    .splineToConstantHeading(new Vector2d(-7.0, -35), Math.toRadians(0.0))
                     .addDisplacementMarker(() -> done = true)
                     .build();
         } else {
@@ -45,10 +46,15 @@ public class PrepareToShootState extends State {
                     })
                     .splineToConstantHeading(new Vector2d(-60.0, -30.0), Math.toRadians(0.0))
                     .splineToConstantHeading(new Vector2d(-45.0, -30.0), Math.toRadians(0.0))
-                    .addDisplacementMarker(() -> redAutoInstance.getDrive().followTrajectoryAsync(prepareToShoot2))
+                    .addDisplacementMarker(() -> {
+                        redAutoInstance.getDrive().followTrajectoryAsync(prepareToShoot2);
+                        Shooter.frontShooterTargetVelo = -2000;
+                        redAutoInstance.getShooter().setShooterStatus(true);
+
+                    })
                     .build();
             prepareToShoot2 = redAutoInstance.getDrive().trajectoryBuilder(prepareToShoot.end())
-                    .lineToLinearHeading(new Pose2d(-35, -38, Math.toRadians(-2)))
+                    .lineToLinearHeading(new Pose2d(-35, -36.5, Math.toRadians(0)))
                     .addDisplacementMarker(() -> {
                         done = true;
                         System.out.println("Prepare to shoot callback ended");

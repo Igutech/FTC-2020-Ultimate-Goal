@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.arcrobotics.ftclib.vision.UGContourRingPipeline;
 
 import org.igutech.auto.FullRedAuto;
@@ -18,7 +19,7 @@ public class MoveToSecondWobbleGoalContinued2 extends State {
     public MoveToSecondWobbleGoalContinued2(FullRedAuto fullRedAuto, Pose2d previous) {
         this.fullRedAuto = fullRedAuto;
         if (fullRedAuto.getHeight() == UGContourRingPipeline.Height.FOUR) {
-            moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous)
+            moveToSecondWobbleGoalContinued2 = fullRedAuto.getDrive().trajectoryBuilder(previous,new DriveConstraints(15, 15, 0.0, Math.toRadians(180), Math.toRadians(180), 0.0))
                     .lineToLinearHeading(new Pose2d(-43, -38,Math.toRadians(0)))
                     .addDisplacementMarker(() -> fullRedAuto.grabWobbleGoal(() -> done = true))
                     .build();

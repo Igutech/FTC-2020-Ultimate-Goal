@@ -18,7 +18,7 @@ public class MoveToShootRingStack extends State {
     public MoveToShootRingStack(FullRedAuto fullRedAuto, Pose2d previous) {
         this.fullRedAuto = fullRedAuto;
         moveToRingStack = fullRedAuto.getDrive().trajectoryBuilder(previous)
-                .splineToConstantHeading(new Vector2d(-7.0, -40.0), Math.toRadians(0.0))
+                .splineToConstantHeading(new Vector2d(-7.0, -36.0), Math.toRadians(0.0))
                 .addDisplacementMarker(() -> done = true)
                 .build();
     }

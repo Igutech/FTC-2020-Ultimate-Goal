@@ -10,6 +10,7 @@ import org.igutech.auto.FullRedAuto;
 
 import dev.raneri.statelib.State;
 
+import org.igutech.teleop.Modules.Shooter;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -49,13 +50,16 @@ public class IntakeRingStack extends State {
                     })
                     .lineToLinearHeading(new Pose2d(-30, -38.0, 0))
                     .addDisplacementMarker(() -> {
-                           fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
-                           fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
-                           fullRedAuto.setShooterEnabled(true);
-                           fullRedAuto.handleLift(2, true, () -> {
-                               intakestate = INTAKESTATE.IntakeC4;
-                               System.out.println("Finished shooting 1-3 ring of the stack");
-                       });
+                        fullRedAuto.getTimerService().registerUniqueTimerEvent(500, "shoot", () -> {
+                            fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
+                            fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
+                            fullRedAuto.setShooterEnabled(true);
+
+                            fullRedAuto.handleLift(2, false, () -> {
+                                    intakestate = INTAKESTATE.IntakeC4;
+                                System.out.println("Finished shooting 1 ring of the stack");
+                            });
+                        });
                     })
                     .build();
             inTakeRingStack = intakeRingStackC;
@@ -67,13 +71,19 @@ public class IntakeRingStack extends State {
                     })
                     .lineToConstantHeading(new Vector2d(-15.0, -38.0))
                     .addDisplacementMarker(() -> {
-                            fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
-                            fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
-                            fullRedAuto.setShooterEnabled(true);
-                            fullRedAuto.handleLift(1, true, () -> {
-                                System.out.println("Finished shooting 4th ring of the stack");
-                                intakestate = INTAKESTATE.OFF;
-                        });
+                        Shooter.frontShooterTargetVelo = -1800;
+                       // fullRedAuto.getHardware().getServos().get("liftServo").setPosition(0.86);
+
+                       fullRedAuto.getTimerService().registerUniqueTimerEvent(300,"shooter",()->{
+
+                           fullRedAuto.getHardware().getMotors().get("intake").setPower(0);
+                           fullRedAuto.getHardware().getMotors().get("intake2").setPower(0);
+                           fullRedAuto.setShooterEnabled(true);
+                           fullRedAuto.handleLift(1, false, () -> {
+                               System.out.println("Finished shooting 2-4th ring of the stack");
+                               intakestate = INTAKESTATE.OFF;
+                           });
+                       });
 
                     })
                     .build();

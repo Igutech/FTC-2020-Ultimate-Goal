@@ -29,7 +29,9 @@ public class ShootRingStackState extends State {
             fullRedAuto.handleLift(3, true, () -> done = true);
         } else {
             fullRedAuto.setShooterEnabled(true);
-            fullRedAuto.handleLift(1, true, () -> done = true);
+            fullRedAuto.getTimerService().registerUniqueTimerEvent(500,"Shooter",()->{
+                fullRedAuto.handleLift(1, true, () -> done = true);
+            });
         }
     }
 

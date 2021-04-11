@@ -23,7 +23,7 @@ public class WobbleGoalGrabber extends Module {
         Teleop.getInstance().getHardware().getServos().get("wobbleGoalServo").setPosition(0.25);
 
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
-        wobbleGoalLift = new ButtonToggle(1, "dpad_left", () -> {
+        wobbleGoalLift = new ButtonToggle(1, "dpad_up", () -> {
             handleWobbleGoalLift();
         }, () -> {
             handleWobbleGoalLift();
