@@ -9,6 +9,7 @@ import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 import org.igutech.utils.FTCMath;
+import org.igutech.utils.PoseStorage;
 import org.igutech.utils.control.PIDFController;
 
 public class DriveTrain extends Module {
@@ -39,6 +40,7 @@ public class DriveTrain extends Module {
     public DriveTrain(HardwareMap hwMap) {
         super(1400, "DriveTrain");
         drive = new SampleMecanumDrive(hwMap);
+        drive.setPoseEstimate(PoseStorage.currentPose);
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
         xController = new PIDFController(kp, ki, kd, 0);

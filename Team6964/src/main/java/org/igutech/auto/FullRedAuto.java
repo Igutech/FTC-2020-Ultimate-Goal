@@ -15,6 +15,7 @@ import org.igutech.config.Hardware;
 import org.igutech.teleop.Modules.Index;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.TimerService;
+import org.igutech.utils.PoseStorage;
 import org.igutech.utils.events.Callback;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -47,10 +48,10 @@ public class FullRedAuto extends LinearOpMode {
         hardware.getServos().get("liftServo").setPosition(0.86);
 
         timerService = new TimerService();
-        index = new Index(hardware,timerService,false);
-        shooter = new Shooter(hardware, false,index);
-       // shooter.frontShooterTargetVelo = -1600;
-        drive = new SampleMecanumDrive(hardwareMap,false);
+        index = new Index(hardware, timerService, false);
+        shooter = new Shooter(hardware, false, index);
+        // shooter.frontShooterTargetVelo = -1600;
+        drive = new SampleMecanumDrive(hardwareMap, false);
         Pose2d startPose = new Pose2d(-63, -35, Math.toRadians(0));
         drive.setPoseEstimate(startPose);
 
@@ -97,6 +98,7 @@ public class FullRedAuto extends LinearOpMode {
             shooter.loop();
             timerService.loop();
             drive.update();
+            PoseStorage.currentPose = drive.getPoseEstimate();
             telemetry.addData("Pose", drive.getPoseEstimate());
             telemetry.update();
         }
@@ -107,15 +109,15 @@ public class FullRedAuto extends LinearOpMode {
     public void handleLift(int level, boolean justStarted, Callback callback) {
         shooter.setShooterStatus(true);
         index.setIndexStatus(true);
-        if(!justStarted){
-            timerService.registerSingleTimerEvent(200,()->{
+        if (!justStarted) {
+            timerService.registerSingleTimerEvent(200, () -> {
                 hardware.getServos().get("liftServo").setPosition(0.86);
             });
-            timerService.registerSingleTimerEvent(400,()->{
+            timerService.registerSingleTimerEvent(400, () -> {
                 hardware.getServos().get("liftServo").setPosition(0.54);
             });
         }
-        timerService.registerUniqueTimerEvent(1000,"Lift",()->{
+        timerService.registerUniqueTimerEvent(1000, "Lift", () -> {
             int time = 0;
             for (int i = 0; i < 2; i++) {
                 timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(true));
@@ -123,11 +125,11 @@ public class FullRedAuto extends LinearOpMode {
                 timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(false));
                 time += 400;
             }
-            time+=425;
+            time += 425;
             timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(true));
-            time+=300;
+            time += 300;
             timerService.registerSingleTimerEvent(time, () -> index.setIndexServoStatus(false));
-            time+=150;
+            time += 150;
             timerService.registerSingleTimerEvent(time, () -> {
                 hardware.getServos().get("liftServo").setPosition(0.86);
                 index.setIndexStatus(false);
@@ -139,16 +141,13 @@ public class FullRedAuto extends LinearOpMode {
     }
 
 
-
-
-
     public void dropWobbleGoal(Callback callback) {
         hardware.getServos().get("wobbleGoalLift").setPosition(1);
         timerService.registerUniqueTimerEvent(900, "Wobble", () -> {
             hardware.getServos().get("wobbleGoalServo").setPosition(0.25);
             //timerService.registerUniqueTimerEvent(200, "Wobble", () -> {
-                callback.call();
-           // });
+            callback.call();
+            // });
         });
     }
 
