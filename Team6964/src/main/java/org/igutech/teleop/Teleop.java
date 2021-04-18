@@ -42,7 +42,7 @@ public class Teleop extends OpMode {
         modules.add(new Intake());
         modules.add(index);
         modules.add(new WobbleGoalGrabber());
-        modules.add(new DriveTrain(hardwareMap,gamepad1));
+        modules.add(new DriveTrain(hardwareMap));
 
 
     }
