@@ -1,84 +1,72 @@
 package org.igutech.teleop.Modules;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+
 import org.apache.commons.math3.util.FastMath;
-import org.igutech.auto.util.LoggingUtil;
+import org.igutech.auto.roadrunner.SampleMecanumDrive;
+import org.igutech.config.Hardware;
 import org.igutech.teleop.Module;
 import org.igutech.teleop.Teleop;
 import org.igutech.utils.FTCMath;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class DriveTrain extends Module {
-
-    private GamepadService gamepadService;
-
-    public DriveTrain() {
-        super(1000, "Drivetrain");
-    }
-
-    @Override
-    public void init() {
-        gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
-
-    }
-
-    @Override
-    public void start() {
+    public double VX_WEIGHT = 1;
+    public double VY_WEIGHT = 1;
+    public double OMEGA_WEIGHT = 1;
+    public HardwareMap hardwareMap;
+    private Gamepad gamepad1;
+    SampleMecanumDrive drive ;
+    Pose2d baseVel;
+    public DriveTrain(HardwareMap hwMap, Gamepad gamepad1) {
+        super(1400, "TestDriveTrain");
+        hardwareMap = hwMap;
+        this.gamepad1 = gamepad1;
+        drive= new SampleMecanumDrive(hwMap);
 
     }
 
     @Override
     public void loop() {
 
-        double vD = FastMath.hypot(gamepadService.getAnalog(1, "right_stick_x"),-gamepadService.getAnalog(1, "right_stick_y"));
-        double thetaD = Math.atan2(-gamepadService.getAnalog(1, "right_stick_x"),
-                gamepadService.getAnalog(1, "right_stick_y")) + FastMath.PI / 4;
-
-        double vTheta = -gamepadService.getAnalog(1, "left_stick_x");
-        double slowMo = gamepadService.getAnalog(1, "right_trigger");
+        double slowMo = gamepad1.right_trigger;
         double vdMult = FTCMath.lerp(1, 0.4, FastMath.abs(slowMo));
         double vThetaMult = FTCMath.lerp(.8, 0.15, FastMath.abs(slowMo));
-        vD *= vdMult;
-        vTheta *= vThetaMult;
-
-//        Teleop.getInstance().telemetry.addData("slowMo", slowMo);
-//        Teleop.getInstance().telemetry.addData("vdMult", vdMult);
-//        Teleop.getInstance().telemetry.addData("vThetaMult", vThetaMult);
-
-        double sin = FastMath.sin(-thetaD);
-        double cos = FastMath.cos(-thetaD);
-        double factor = Math.max(Math.abs(sin),Math.abs(cos));
-        sin/=factor;
-        cos/=factor;
-        double frontLeft = vD * sin - vTheta;
-        double frontRight = vD * cos - vTheta;
-        double backLeft = vD * cos + vTheta;
-        double backRight = vD * sin + vTheta;
-
-
-        List<Double> powers = Arrays.asList(frontLeft, frontRight, backLeft, backRight);
-        double minPower = Collections.min(powers);
-        double maxPower = Collections.max(powers);
-        double maxMag = FastMath.max(FastMath.abs(minPower), FastMath.abs(maxPower));
-
-        if (maxMag > 1.0) {
-            for (int i = 0; i < powers.size(); i++)
-                powers.set(i, powers.get(i) / maxMag);
+        Pose2d vel;
+        baseVel= new Pose2d(
+                -gamepad1.right_stick_y*vdMult,
+                -gamepad1.right_stick_x*vdMult,
+                -gamepad1.left_stick_x*vThetaMult
+        );
+        if (Math.abs(baseVel.getX()) + Math.abs(baseVel.getY()) + Math.abs(baseVel.getHeading()) > 1) {
+            // re-normalize the powers according to the weights
+            double denom = VX_WEIGHT * Math.abs(baseVel.getX())
+                    + VY_WEIGHT * Math.abs(baseVel.getY())
+                    + OMEGA_WEIGHT * Math.abs(baseVel.getHeading());
+            vel = new Pose2d(
+                    VX_WEIGHT * baseVel.getX(),
+                    VY_WEIGHT * baseVel.getY(),
+                    OMEGA_WEIGHT * baseVel.getHeading()
+            ).div(denom);
+        } else {
+            vel = baseVel;
         }
 
-        Teleop.getInstance().getHardware().getMotors().get("frontleft").setPower(powers.get(0));
-        Teleop.getInstance().getHardware().getMotors().get("frontright").setPower(powers.get(1));
-        Teleop.getInstance().getHardware().getMotors().get("backleft").setPower(-powers.get(2));
-        Teleop.getInstance().getHardware().getMotors().get("backright").setPower(-powers.get(3));
+        drive.setDrivePower(vel);
+
+        drive.update();
+
+        Pose2d poseEstimate = drive.getPoseEstimate();
+
+        System.out.println(poseEstimate.toString());
+        Teleop.getInstance().telemetry.addData("Pose",poseEstimate);
 
 
-        Teleop.getInstance().telemetry.addData("FrontLeft ", powers.get(0));
-        Teleop.getInstance().telemetry.addData("FrontRight", powers.get(1));
-        Teleop.getInstance().telemetry.addData("BackLeft", -powers.get(2));
-        Teleop.getInstance().telemetry.addData("BackRight", -powers.get(3));
-
-
-
+    }
+    public double angleWrap ( double angle){
+        return (angle + (2 * Math.PI)) % (2 * Math.PI);
     }
 }
