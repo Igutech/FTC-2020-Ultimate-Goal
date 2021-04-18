@@ -13,6 +13,7 @@ import org.igutech.teleop.Modules.GoToPoint;
 import org.igutech.teleop.Modules.Index;
 import org.igutech.teleop.Modules.Intake;
 import org.igutech.teleop.Modules.Shooter;
+import org.igutech.teleop.Modules.TestDriveTrain;
 import org.igutech.teleop.Modules.ThreeWheelOdometry;
 import org.igutech.teleop.Modules.TimerService;
 import org.igutech.teleop.Modules.WobbleGoalGrabber;
@@ -41,11 +42,12 @@ public class Teleop extends OpMode {
 
         index = new Index(hardware, timerService, true);
         modules.add(new DriveTrain());
-       // modules.add(new ThreeWheelOdometry());
+        //modules.add(new ThreeWheelOdometry());
         modules.add(new Shooter(hardware, true,index));
         modules.add(new Intake());
         modules.add(index);
         modules.add(new WobbleGoalGrabber());
+       // modules.add(new TestDriveTrain(hardwareMap,gamepad1));
 
 
     }
