@@ -1,6 +1,7 @@
 package org.igutech.teleop.Modules;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.apache.commons.math3.util.FastMath;
@@ -10,22 +11,8 @@ import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 import org.igutech.utils.FTCMath;
 import org.igutech.utils.PoseStorage;
-import org.igutech.utils.control.PIDFController;
 
-public class DriveTrain extends Module {
-    public static double kp = 0.03;
-    public static double ki = 0;
-    public static double kd = 0.000;
-
-    public static double kpr = 0.6;
-    public static double kir = 0;
-    public static double kdr = 0.00;
-    public static int targetX = 0;
-    public static int targetY = 0;
-    public static double targetTheta = Math.PI;
-    private PIDFController xController;
-    private PIDFController yController;
-    private PIDFController thetaController;
+public class RRBasedDriveTrain extends Module {
     private ButtonToggle gotoPointToggle;
 
 
@@ -37,8 +24,10 @@ public class DriveTrain extends Module {
     private Pose2d vel;
     private GamepadService gamepadService;
     private HardwareMap hwMap;
-    public DriveTrain(HardwareMap hwMap) {
-        super(1400, "DriveTrain");
+    private DriveTrainState state;
+
+    public RRBasedDriveTrain(HardwareMap hwMap) {
+        super(1000, "RRBasedDriveTrain");
         this.hwMap = hwMap;
     }
 
@@ -48,13 +37,12 @@ public class DriveTrain extends Module {
         drive.setPoseEstimate(PoseStorage.currentPose);
         gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
-        xController = new PIDFController(kp, ki, kd, 0);
-        yController = new PIDFController(kp, ki, kd, 0);
-        thetaController = new PIDFController(kpr, kir, kdr, 0);
         gotoPointToggle = new ButtonToggle(1, "dpad_left", () -> {
         }, () -> {
         });
         gotoPointToggle.init();
+        state = DriveTrainState.OFF;
+
     }
 
     @Override
@@ -71,15 +59,26 @@ public class DriveTrain extends Module {
         );
 
         if (baseVel.getX() != 0 || baseVel.getY() != 0 || baseVel.getHeading() != 0) {
-            vel = normalize(baseVel);
-            gotoPointToggle.setState(false);
+            state = DriveTrainState.MANUAL;
         } else if (gotoPointToggle.getState()) {
-            vel = goToPoint(new Pose2d(targetX, targetY, targetTheta), drive.getPoseEstimate());
+            state = DriveTrainState.START_FOLLOWING;
         } else {
-            vel = new Pose2d(0, 0, 0);
+            state = DriveTrainState.OFF;
         }
 
-        drive.setDrivePower(vel);
+        if (state == DriveTrainState.MANUAL || state == DriveTrainState.OFF) {
+            drive.cancelFollowing();
+            vel = normalize(baseVel);
+            drive.setDrivePower(vel);
+        } else if (state == DriveTrainState.START_FOLLOWING) {
+            Trajectory traj1 = drive.trajectoryBuilder(drive.getPoseEstimate())
+                    .lineToLinearHeading(new Pose2d(-20.0, -33.0, 0.0))
+                    .build();
+            drive.followTrajectoryAsync(traj1);
+            gotoPointToggle.setState(false);
+            state = DriveTrainState.FOLLOWING;
+        }
+
         drive.update();
 
         Teleop.getInstance().telemetry.addData("Pose", drive.getPoseEstimate());
@@ -105,33 +104,11 @@ public class DriveTrain extends Module {
         return temp;
     }
 
-    public Pose2d goToPoint(Pose2d target, Pose2d current) {
-
-        double heading = current.getHeading();  //0 radian
-        double target_heading = target.getHeading(); //PI
-        xController.updateSetpoint(target.getX());
-        yController.updateSetpoint(target.getY());
-        thetaController.updateSetpoint(target_heading);
-        if (current.getHeading() <= Math.PI) {
-            heading = current.getHeading();
-        } else {
-            heading = -((2 * Math.PI) - current.getHeading());
-        }
-
-        if (Math.abs(target.getHeading() - heading) >= Math.toRadians(180.0)) {
-            target_heading = -((2 * Math.PI) - target.getHeading());
-        }
-        double xPower = xController.update(current.getX());
-        double yPower = yController.update(current.getY());
-        double rotPower = thetaController.update(heading);
-
-        return convertToPowerCentric(xPower, yPower, rotPower, current.getHeading());
-
+    private enum DriveTrainState {
+        MANUAL,
+        START_FOLLOWING,
+        FOLLOWING,
+        OFF
     }
 
-    public Pose2d convertToPowerCentric(double x, double y, double rot, double heading) {
-        x = x * Math.cos(heading) - y * Math.sin(heading);
-        y = x * Math.sin(heading) + y * Math.cos(heading);
-        return (normalize(new Pose2d(x, y, rot)));
-    }
 }
