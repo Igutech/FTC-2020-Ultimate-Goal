@@ -1,5 +1,7 @@
 package org.igutech.teleop.Modules;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -12,6 +14,7 @@ import org.igutech.utils.FTCMath;
 import org.igutech.utils.PoseStorage;
 import org.igutech.utils.control.PIDFController;
 
+@Config
 public class DriveTrain extends Module {
     public static double kp = 0.03;
     public static double ki = 0;
@@ -20,9 +23,9 @@ public class DriveTrain extends Module {
     public static double kpr = 0.6;
     public static double kir = 0;
     public static double kdr = 0.00;
-    public static int targetX = 0;
-    public static int targetY = 0;
-    public static double targetTheta = Math.PI;
+    public static int targetX = -20;
+    public static int targetY = -33;
+    public static double targetTheta = 0;
     private PIDFController xController;
     private PIDFController yController;
     private PIDFController thetaController;
@@ -83,7 +86,7 @@ public class DriveTrain extends Module {
         drive.update();
 
         Teleop.getInstance().telemetry.addData("Pose", drive.getPoseEstimate());
-
+        FtcDashboard.getInstance().getTelemetry().addData("Pose",drive.getPoseEstimate());
         gotoPointToggle.loop();
     }
 

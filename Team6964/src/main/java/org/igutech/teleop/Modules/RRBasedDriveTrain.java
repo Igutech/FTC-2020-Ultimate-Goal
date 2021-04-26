@@ -1,5 +1,6 @@
 package org.igutech.teleop.Modules;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -11,7 +12,7 @@ import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 import org.igutech.utils.FTCMath;
 import org.igutech.utils.PoseStorage;
-
+@Config
 public class RRBasedDriveTrain extends Module {
     private ButtonToggle gotoPointToggle;
 
@@ -25,7 +26,8 @@ public class RRBasedDriveTrain extends Module {
     private GamepadService gamepadService;
     private HardwareMap hwMap;
     private DriveTrainState state;
-
+    public static double x = -10;
+    public static double y = -33;
     public RRBasedDriveTrain(HardwareMap hwMap) {
         super(1000, "RRBasedDriveTrain");
         this.hwMap = hwMap;
@@ -57,13 +59,17 @@ public class RRBasedDriveTrain extends Module {
                 -gamepadService.getAnalog(1, "right_stick_x") * vdMult,
                 -gamepadService.getAnalog(1, "left_stick_x") * vThetaMult
         );
-
-        if (baseVel.getX() != 0 || baseVel.getY() != 0 || baseVel.getHeading() != 0) {
-            state = DriveTrainState.MANUAL;
-        } else if (gotoPointToggle.getState()) {
-            state = DriveTrainState.START_FOLLOWING;
-        } else {
-            state = DriveTrainState.OFF;
+        if(!gotoPointToggle.getState()){
+            state= DriveTrainState.OFF;
+        }
+        if(state!=DriveTrainState.FOLLOWING){
+            if (baseVel.getX() != 0 || baseVel.getY() != 0 || baseVel.getHeading() != 0) {
+                state = DriveTrainState.MANUAL;
+            } else if (gotoPointToggle.getState()) {
+                state = DriveTrainState.START_FOLLOWING;
+            } else {
+                state = DriveTrainState.OFF;
+            }
         }
 
         if (state == DriveTrainState.MANUAL || state == DriveTrainState.OFF) {
@@ -72,10 +78,10 @@ public class RRBasedDriveTrain extends Module {
             drive.setDrivePower(vel);
         } else if (state == DriveTrainState.START_FOLLOWING) {
             Trajectory traj1 = drive.trajectoryBuilder(drive.getPoseEstimate())
-                    .lineToLinearHeading(new Pose2d(-20.0, -33.0, 0.0))
+                    .lineToLinearHeading(new Pose2d(x, y, 0.0))
                     .build();
             drive.followTrajectoryAsync(traj1);
-            gotoPointToggle.setState(false);
+            //gotoPointToggle.setState(false);
             state = DriveTrainState.FOLLOWING;
         }
 

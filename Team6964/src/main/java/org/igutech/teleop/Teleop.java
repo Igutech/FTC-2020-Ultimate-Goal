@@ -10,6 +10,7 @@ import org.igutech.teleop.Modules.DisconnectWorkaround;
 import org.igutech.teleop.Modules.GamepadService;
 import org.igutech.teleop.Modules.Index;
 import org.igutech.teleop.Modules.Intake;
+import org.igutech.teleop.Modules.RRBasedDriveTrain;
 import org.igutech.teleop.Modules.Shooter;
 import org.igutech.teleop.Modules.DriveTrain;
 import org.igutech.teleop.Modules.TimerService;
@@ -42,7 +43,8 @@ public class Teleop extends OpMode {
         modules.add(new Intake());
         modules.add(index);
         modules.add(new WobbleGoalGrabber());
-        modules.add(new DriveTrain(hardwareMap));
+        //modules.add(new DriveTrain(hardwareMap));
+        modules.add(new RRBasedDriveTrain(hardwareMap));
 
 
     }
