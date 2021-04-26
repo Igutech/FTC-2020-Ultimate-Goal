@@ -30,7 +30,6 @@ public class PIDFController implements BasicController {
 
     @Override
     public double update(double pv) {
-        if (FastMath.abs(error(pv)) <= 1) return 0;
         double timeOffset = System.currentTimeMillis() - currentTime;
         if (timeOffset < 1)
             timeOffset = 1;
