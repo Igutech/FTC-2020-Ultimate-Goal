@@ -28,8 +28,8 @@ public class Index extends Module {
             gamepadService = (GamepadService) Teleop.getInstance().getService("GamepadService");
 
             shootToggle = new ButtonToggle(1, "left_bumper",
-                    ()->timerService.registerUniqueTimerEvent(0,"shootrings", this::shootRings),
-                    ()->timerService.registerUniqueTimerEvent(0,"shootrings", this::shootRings));
+                    () -> timerService.registerUniqueTimerEvent(0, "shootrings", this::shootRings),
+                    () -> timerService.registerUniqueTimerEvent(0, "shootrings", this::shootRings));
 
             shooterServoToggle = new ButtonToggle(1, "y", () -> {
                 setIndexServoStatus(true);
@@ -86,23 +86,26 @@ public class Index extends Module {
     }
 
     private void shootRings() {
-        if(isPowershot){
-             setIndexServoStatus(true);
+        if (isPowershot) {
+            setIndexServoStatus(true);
             timerService.registerSingleTimerEvent(150, () -> setIndexServoStatus(false));
-        }else{
-            int time = 0;
-            for (int i = 0; i < 2; i++) {
+        } else {
+            if (((Shooter) Teleop.getInstance().getModuleByName("Shooter")).isEnableShooter()) {
+                int time = 0;
+                for (int i = 0; i < 2; i++) {
+                    timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(true));
+                    time += 200;
+                    timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(false));
+                    time += 200;
+                }
+                time += 225;
                 timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(true));
-                time += 200;
+                time += 150;
                 timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(false));
-                time += 200;
+                time += 150;
+                timerService.registerSingleTimerEvent(time, () -> hardware.getServos().get("liftServo").setPosition(0.86));
             }
-            time+=225;
-            timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(true));
-            time+=150;
-            timerService.registerSingleTimerEvent(time, () -> setIndexServoStatus(false));
-            time+=150;
-            timerService.registerSingleTimerEvent(time, () -> hardware.getServos().get("liftServo").setPosition(0.86));
+
         }
 
     }

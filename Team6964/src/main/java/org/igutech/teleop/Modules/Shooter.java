@@ -70,7 +70,6 @@ public class Shooter extends Module {
     }
 
 
-
     @Override
     public void loop() {
 
@@ -82,12 +81,15 @@ public class Shooter extends Module {
             if (Math.abs(manualPower) != 0.0) {
                 wasPidRunning = false;
                 shooterState = ShooterState.MANUAL;
+                enableShooter = false;
             } else if (highGoalToggle.getState()) {
+                enableShooter = true;
                 shooterState = ShooterState.HIGH_GOAL;
             } else if (powershotToggle.getState()) {
                 shooterState = ShooterState.POWERSHOT;
             } else {
                 shooterState = ShooterState.OFF;
+                enableShooter = false;
             }
         } else {
             if (enableShooter) {
@@ -157,6 +159,10 @@ public class Shooter extends Module {
 
     public void setShooterStatus(boolean status) {
         enableShooter = status;
+    }
+
+    public boolean isEnableShooter() {
+        return enableShooter;
     }
 
     enum ShooterState {
