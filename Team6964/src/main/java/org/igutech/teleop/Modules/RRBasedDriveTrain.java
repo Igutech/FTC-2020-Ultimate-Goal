@@ -12,9 +12,13 @@ import org.igutech.teleop.Teleop;
 import org.igutech.utils.ButtonToggle;
 import org.igutech.utils.FTCMath;
 import org.igutech.utils.PoseStorage;
+
+import java.util.logging.Logger;
+
 @Config
 public class RRBasedDriveTrain extends Module {
     private ButtonToggle gotoPointToggle;
+    private ButtonToggle resetOdoToggle;
 
 
     private double VX_WEIGHT = 1;
@@ -28,6 +32,7 @@ public class RRBasedDriveTrain extends Module {
     private DriveTrainState state;
     public static double x = -10;
     public static double y = -33;
+
     public RRBasedDriveTrain(HardwareMap hwMap) {
         super(1000, "RRBasedDriveTrain");
         this.hwMap = hwMap;
@@ -42,8 +47,12 @@ public class RRBasedDriveTrain extends Module {
         gotoPointToggle = new ButtonToggle(1, "dpad_left", () -> {
         }, () -> {
         });
+        resetOdoToggle = new ButtonToggle(1, "dpad_down", () ->
+                drive.setPoseEstimate(new Pose2d(-62.5, -63.5, 0)), () -> drive.setPoseEstimate(new Pose2d(-62.5, -63.5, 0)));
         gotoPointToggle.init();
-        state = DriveTrainState.OFF;
+        resetOdoToggle.init();
+
+        state = DriveTrainState.DRIVER_CONTROL;
 
     }
 
@@ -59,37 +68,32 @@ public class RRBasedDriveTrain extends Module {
                 -gamepadService.getAnalog(1, "right_stick_x") * vdMult,
                 -gamepadService.getAnalog(1, "left_stick_x") * vThetaMult
         );
-        if(!gotoPointToggle.getState()){
-            state= DriveTrainState.OFF;
-        }
-        if(state!=DriveTrainState.FOLLOWING){
-            if (baseVel.getX() != 0 || baseVel.getY() != 0 || baseVel.getHeading() != 0) {
-                state = DriveTrainState.MANUAL;
-            } else if (gotoPointToggle.getState()) {
-                state = DriveTrainState.START_FOLLOWING;
-            } else {
-                state = DriveTrainState.OFF;
-            }
+
+
+        if (baseVel.getX() != 0 || baseVel.getY() != 0 || baseVel.getHeading() != 0) {
+            state = DriveTrainState.DRIVER_CONTROL;
+        } else if (gotoPointToggle.getState() && state != DriveTrainState.FOLLOWING) {
+            state = DriveTrainState.AUTOMATIC_CONTROL;
         }
 
-        if (state == DriveTrainState.MANUAL || state == DriveTrainState.OFF) {
+        if (state == DriveTrainState.DRIVER_CONTROL) {
             drive.cancelFollowing();
+            gotoPointToggle.setState(false);
             vel = normalize(baseVel);
             drive.setDrivePower(vel);
-        } else if (state == DriveTrainState.START_FOLLOWING) {
+        } else if (state != DriveTrainState.FOLLOWING) {
             Trajectory traj1 = drive.trajectoryBuilder(drive.getPoseEstimate())
                     .lineToLinearHeading(new Pose2d(x, y, 0.0))
                     .build();
             drive.followTrajectoryAsync(traj1);
-            //gotoPointToggle.setState(false);
             state = DriveTrainState.FOLLOWING;
         }
 
         drive.update();
 
         Teleop.getInstance().telemetry.addData("Pose", drive.getPoseEstimate());
-
         gotoPointToggle.loop();
+        resetOdoToggle.loop();
     }
 
     public Pose2d normalize(Pose2d baseVel) {
@@ -111,8 +115,8 @@ public class RRBasedDriveTrain extends Module {
     }
 
     private enum DriveTrainState {
-        MANUAL,
-        START_FOLLOWING,
+        DRIVER_CONTROL,
+        AUTOMATIC_CONTROL,
         FOLLOWING,
         OFF
     }
