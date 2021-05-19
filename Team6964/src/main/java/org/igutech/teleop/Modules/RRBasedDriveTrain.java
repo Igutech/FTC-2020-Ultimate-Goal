@@ -48,7 +48,7 @@ public class RRBasedDriveTrain extends Module {
         }, () -> {
         });
         resetOdoToggle = new ButtonToggle(1, "dpad_down", () ->
-                drive.setPoseEstimate(new Pose2d(-62.5, -63.5, 0)), () -> drive.setPoseEstimate(new Pose2d(-62.5, -63.5, 0)));
+                drive.setPoseEstimate(new Pose2d(-10, -33, 0)), () -> drive.setPoseEstimate(new Pose2d(-10, -33, 0)));
         gotoPointToggle.init();
         resetOdoToggle.init();
 
